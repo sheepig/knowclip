@@ -1,4 +1,5 @@
 import r from '../redux'
+import { toHiragana } from 'wanakana'
 import { toTimestamp } from './ffmpeg'
 import { extname, basename } from 'path'
 import { getNoteTypeFields } from '../utils/noteType'
@@ -163,6 +164,14 @@ export const getApkgExportData = async (
           ? seconds
           : +(getMidpoint(startTime, endTime) / 1000).toFixed(3)
 
+      const shouldHiragana = Boolean(
+        (state.settings as any).addHiraganaForJapanese
+      )
+      const baseFields = flashcard.fields
+      const fieldsWithHiragana = shouldHiragana
+        ? { ...baseFields, transcription: toHiragana(baseFields.transcription) }
+        : baseFields
+
       clipSpecs.push({
         sourceFilePath: fileLoaded.filePath,
         startTime,
@@ -171,7 +180,7 @@ export const getApkgExportData = async (
         flashcardSpecs: {
           id: clip.id,
           fields: [
-            ...Object.values(flashcard.fields).map(roughEscape),
+            ...Object.values(fieldsWithHiragana).map(roughEscape),
             `[sound:${outputFilename}]`,
             flashcard.image
               ? `<img src="${basename(
@@ -194,7 +203,7 @@ export const getApkgExportData = async (
           clozeDeletions: flashcard.cloze.length
             ? roughEscape(
                 encodeClozeDeletions(
-                  flashcard.fields.transcription,
+                  fieldsWithHiragana.transcription,
                   flashcard.cloze
                 )
               )

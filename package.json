@@ -160,6 +160,9 @@
     "vitest": "^2.1.1",
     "yalc": "^1.0.0-pre.53"
   },
+  "overrides": {
+    "temp-dir": "2.0.0"
+  },
   "build": {
     "appId": "com.electron.knowclip",
     "asar": true,

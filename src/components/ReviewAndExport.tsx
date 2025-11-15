@@ -8,6 +8,8 @@ import {
   Tabs,
   Tab,
   LinearProgress,
+  FormControlLabel,
+  Switch,
 } from '@mui/material'
 import r from '../redux'
 import css from './Export.module.css'
@@ -29,6 +31,7 @@ const Export = React.memo(
       projectMedia,
       progress,
       clipIdsByMediaFileId,
+      addHiraganaForJapanese,
     } = useSelector((state: AppState) => {
       const currentMedia = r.getCurrentMediaFile(state)
       return {
@@ -37,6 +40,7 @@ const Export = React.memo(
         projectMedia: r.getCurrentProjectMediaFiles(state),
         progress: state.session.progress,
         clipIdsByMediaFileId: state.clips.idsByMediaFileId,
+        addHiraganaForJapanese: state.settings.addHiraganaForJapanese || false,
       }
     })
 
@@ -170,6 +174,25 @@ const Export = React.memo(
                   />
                 ))}
               </div>
+            )}
+            {selectionHasStarted && currentTabIndex === 0 && (
+              <section className={css.optionsRow}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={addHiraganaForJapanese}
+                      onChange={(e) =>
+                        dispatch(
+                          actions.overrideSettings({
+                            addHiraganaForJapanese: e.target.checked,
+                          })
+                        )
+                      }
+                    />
+                  }
+                  label="add hiragana for Japanese"
+                />
+              </section>
             )}
           </DialogContent>
         )}

@@ -19,11 +19,12 @@ export function setUpMocks<M extends ModuleLike>(
   actualModule: MockedModule<M>
 ): MockedModule<M> {
   console.log(`setUpMocks was called from RENDERER with id ${moduleId}`)
-  const mocking = window.electronApi.env.NODE_ENV === 'integration'
+  const env = (window as any)?.electronApi?.env
+  const mocking = Boolean(env && env.NODE_ENV === 'integration')
 
   if (!mocking) return actualModule
 
-  const currentTestId = window.electronApi.env.TEST_ID
+  const currentTestId = env?.TEST_ID
 
   const mockState = {
     logged: {} as { [K in keyof M]: ReturnType<M[K]>[] },
@@ -66,11 +67,10 @@ export function setUpMocks<M extends ModuleLike>(
 
       logged[functionName].push(actualReturnValue)
 
-      window.electronApi.writeMocksLog(
-        currentTestId || 'NO_TEST_ID',
-        moduleId,
-        logged
-      )
+      const api = (window as any)?.electronApi
+      if (api && typeof api.writeMocksLog === 'function') {
+        api.writeMocksLog(currentTestId || 'NO_TEST_ID', moduleId, logged)
+      }
 
       return actualReturnValue
     }

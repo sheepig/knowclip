@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CircularProgress } from '@mui/material'
+import { CircularProgress, Tooltip, IconButton } from '@mui/material'
 import { useNavigate, useParams } from 'react-router-dom'
 import cn from 'clsx'
 import Media from '../components/Media'
@@ -22,6 +22,7 @@ import css from '../components/Main.module.css'
 import waveformCss from '../components/Waveform.module.css'
 import * as r from '../selectors'
 import { actions } from '../actions'
+import { HelpOutline } from '@mui/icons-material'
 import { setMousePosition } from '../utils/mousePosition'
 import 'clipwave/dist/index.css'
 import { SubtitlesCardBase } from '../selectors'
@@ -296,22 +297,34 @@ const Main = () => {
       </section>
 
       {currentMediaFile && !mediaIsEffectivelyLoading ? (
-        <Waveform
-          waveform={waveform}
-          playerRef={playerRef}
-          key={currentMediaFile.id}
-          images={waveformImagesWithUrls}
-          onWaveformDrag={handleWaveformDrag}
-          onClipDrag={handleClipDrag}
-          onClipEdgeDrag={handleClipEdgeDrag}
-          renderPrimaryClip={renderPrimaryClip}
-          renderSecondaryClip={renderSecondaryClip}
-          height={
-            WAVEFORM_HEIGHT +
-            subsBases.linkedTrackIds.length * SUBTITLES_CHUNK_HEIGHT
-          }
-          style={{ background: 'gray', alignSelf: 'flex-start', width: '100%' }}
-        />
+        <div style={{ position: 'relative', width: '100%' }}>
+          <Waveform
+            waveform={waveform}
+            playerRef={playerRef}
+            key={currentMediaFile.id}
+            images={waveformImagesWithUrls}
+            onWaveformDrag={handleWaveformDrag}
+            onClipDrag={handleClipDrag}
+            onClipEdgeDrag={handleClipEdgeDrag}
+            renderPrimaryClip={renderPrimaryClip}
+            renderSecondaryClip={renderSecondaryClip}
+            height={
+              WAVEFORM_HEIGHT +
+              subsBases.linkedTrackIds.length * SUBTITLES_CHUNK_HEIGHT
+            }
+            style={{ background: 'gray', alignSelf: 'flex-start', width: '100%' }}
+          />
+          <Tooltip title={
+            'Audio regions are segmented using the transcription track only by default. You can change the cue track in the subtitles menu.'
+          }>
+            <IconButton
+              size="small"
+              style={{ position: 'absolute', top: 8, right: 8 }}
+            >
+              <HelpOutline />
+            </IconButton>
+          </Tooltip>
+        </div>
       ) : (
         <div
           className={cn(waveformCss.waveformPlaceholder, waveform$.placeholder)}

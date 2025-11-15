@@ -7,6 +7,8 @@ export const initialState: SettingsState = {
   checkForUpdatesAutomatically: true,
   warnBeforeConvertingMedia: true,
   viewMode: 'VERTICAL',
+  addHiraganaForJapanese: false,
+  subtitlesMergeThresholdMs: 500,
 }
 
 const settings: Reducer<SettingsState, Action> = (

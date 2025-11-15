@@ -17,6 +17,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import * as selectors from '../selectors'
 import { actions } from '../actions'
+import { TextField, Box } from '@mui/material'
 import {
   IconButton,
   Icon,
@@ -40,16 +41,19 @@ import { AnyAction, Dispatch } from 'redux'
 const SubtitlesMenu = () => {
   const { anchorEl, anchorCallbackRef, open, close, isOpen } = usePopover()
 
-  const { subtitles, currentFileId, fieldNamesToTrackIds } = useSelector(
+  const { subtitles, currentFileId, fieldNamesToTrackIds, mergeThresholdMs } = useSelector(
     (state: AppState) => {
       const currentFileId = selectors.getCurrentFileId(state)
       return {
         subtitles: selectors.getSubtitlesFilesWithTracks(state),
         currentFileId,
         fieldNamesToTrackIds: selectors.getSubtitlesFlashcardFieldLinks(state),
+        mergeThresholdMs: state.settings.subtitlesMergeThresholdMs || 500,
       }
     }
   )
+  const [pendingMergeMs, setPendingMergeMs] = React.useState<number>(mergeThresholdMs)
+  const debounceRef = React.useRef<number | undefined>(undefined)
 
   const trackIdsToFieldNames = useMemo(
     () =>
@@ -114,6 +118,33 @@ const SubtitlesMenu = () => {
                 No subtitles loaded.
               </MenuItem>
             )}
+            <Divider />
+            <MenuItem dense disabled>
+              <ListItemText primary="Subtitle Track Settings" />
+            </MenuItem>
+            <MenuItem dense>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                <TextField
+                  label="Merge interval (ms)"
+                  type="number"
+                  inputProps={{ min: 0, max: 3000, step: 50 }}
+                  value={pendingMergeMs}
+                  onChange={(e) => {
+                    const v = Math.max(0, Math.min(3000, Number(e.target.value) || 0))
+                    setPendingMergeMs(v)
+                    if (debounceRef.current) window.clearTimeout(debounceRef.current)
+                    debounceRef.current = window.setTimeout(() => {
+                      dispatch(actions.overrideSettings({ subtitlesMergeThresholdMs: v }))
+                    }, 3000)
+                  }}
+                  variant="outlined"
+                  size="small"
+                  sx={{ width: 200 }}
+                  helperText="Two sentences with a gap smaller than this will be merged into one."
+                />
+              </Box>
+            </MenuItem>
+            <Divider />
             {subtitles.embedded.map(
               ({ relation, sourceFile: file, track }, i) => (
                 <EmbeddedTrackMenuItem

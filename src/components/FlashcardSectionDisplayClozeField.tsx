@@ -14,8 +14,7 @@ import { useSelector } from 'react-redux'
 import { ClozeControls } from '../utils/clozeField/useClozeControls'
 import r from '../redux'
 import usePopover from '../utils/usePopover'
-import { DictionaryPopover } from './DictionaryPopover'
-import { useFieldPopoverDictionary } from '../utils/clozeField/useFieldPopoverDictionary'
+ 
 
 // check nico 38:53 einverstanden? gives no result
 // check tobira
@@ -49,25 +48,6 @@ const ClozeField = ({
 
   const popover = usePopover()
 
-  const handleDoubleClick = useCallback(
-    (e: any) => {
-      if (!clozeInputRef.current) return
-
-      popover.open(e)
-    },
-    [clozeInputRef, popover]
-  )
-
-  const handleMouseDown = useCallback(
-    (e: any) => {
-      if (popover.isOpen) {
-        // don't focus when closing popover
-        e.preventDefault()
-      }
-    },
-    [popover.isOpen]
-  )
-
   const editing = currentClozeIndex !== -1
 
   useEffect(() => {
@@ -79,24 +59,11 @@ const ClozeField = ({
     }
   }, [currentClozeIndex, clozeInputRef, editing])
   const clozeId = ClozeIds[currentClozeIndex]
-  const { viewMode, activeDictionaryType } = useSelector((state: AppState) => ({
+  const { viewMode } = useSelector((state: AppState) => ({
     viewMode: state.settings.viewMode,
-    activeDictionaryType: r.getActiveDictionaryType(state),
   }))
 
-  const {
-    cursorPosition,
-    translationsAtCharacter,
-    onKeyDown: handleKeyDown,
-    handleFocus,
-    handleBlur,
-  } = useFieldPopoverDictionary(
-    popover,
-    activeDictionaryType,
-    clozeControls,
-    value,
-    editing
-  )
+  const cursorPosition = -1
 
   const rangesWithClozeIndexes = deletions
     .flatMap(({ ranges }, clozeIndex) => {
@@ -222,30 +189,17 @@ const ClozeField = ({
       <Tooltip
         key={value}
         {...tooltipProps}
-        title={popover.isOpen && activeDictionaryType ? '' : tooltipProps.title}
       >
         <span
           className={cn(css.clozeFieldValue, clozeId, {
             [css.clozePreviewFieldValue]: previewClozeIndex !== -1,
           })}
           tabIndex={0}
-          onKeyDown={handleKeyDown}
-          onFocus={handleFocus}
-          onBlur={handleBlur}
-          onDoubleClick={handleDoubleClick}
-          onMouseDown={handleMouseDown}
           ref={clozeInputRef}
         >
           {segments}
           {cursorPosition === value.length && (
             <span className={css.clozeCursor} />
-          )}
-          {popover.isOpen && (
-            <DictionaryPopover
-              activeDictionaryType={activeDictionaryType}
-              popover={popover}
-              translationsAtCharacter={translationsAtCharacter}
-            />
           )}
         </span>
       </Tooltip>

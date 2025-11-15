@@ -11,8 +11,8 @@ const getKeyboardShortcuts = (platform: Window['electronApi']['platform']) =>
     'Select next': '→',
     'Select previous (while editing)': 'Alt + ←',
     'Select next (while editing)': 'Alt + →',
-    'Look up word at mouse cursor': 'D',
-    'Close dictionary popover': 'Esc',
+    'Toggle translation subtitles': 'T',
+    'Copy current subtitle': 'Y',
     'Start editing fields': 'E',
     'Delete clip and card': 'Ctrl + Shift + D',
     'Stop editing fields': 'Esc',
@@ -74,9 +74,9 @@ const KeyboardShortcuts = () => {
             </section>
 
             <section className={css.group}>
-              <h3 className={css.heading}>Dictionary</h3>
-              <Shortcut action="Look up word at mouse cursor" />
-              <Shortcut action="Close dictionary popover" />
+              <h3 className={css.heading}>Subtitles</h3>
+              <Shortcut action="Toggle translation subtitles" />
+              <Shortcut action="Copy current subtitle" />
             </section>
 
             <section className={css.group}>

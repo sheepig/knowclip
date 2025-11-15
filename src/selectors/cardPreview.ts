@@ -54,11 +54,13 @@ export const getSubtitlesCardBases = createSelector(
   getCurrentMediaFile,
   getSubtitlesFlashcardFieldLinks,
   getSubtitlesCardBaseFieldPriority,
+  (state: AppState) => state.settings,
   (
     subtitles,
     currentFile,
     fieldsToTracks,
-    fieldsCuePriority
+    fieldsCuePriority,
+    settings
   ): SubtitlesCardBases => {
     const [cueField] = fieldsCuePriority
     const cueTrackId = cueField && fieldsToTracks[cueField]
@@ -89,7 +91,8 @@ export const getSubtitlesCardBases = createSelector(
       currentFile!.durationSeconds,
       fieldsToTracks,
       subtitles,
-      fieldsCuePriority
+      fieldsCuePriority,
+      settings.subtitlesMergeThresholdMs || 500
     )
 
     return {
@@ -124,12 +127,15 @@ function combineSubtitles(
   mediaDurationSeconds: number,
   fieldsToTracks: SubtitlesFlashcardFieldsLinks,
   subtitles: SubtitlesState,
-  fieldsCuePriority: TransliterationFlashcardFieldName[]
+  fieldsCuePriority: TransliterationFlashcardFieldName[],
+  thresholdMs: number
 ) {
   const mediaDurationMs = Math.round(mediaDurationSeconds * 1000)
   type ChunkClip = PrimaryClip & { trackId: SubtitlesTrackId }
-  const tracksAsClips: ChunkClip[] = Object.values(fieldsToTracks)
-    .filter((trackId) => trackId && subtitles[trackId])
+  const cueField = fieldsCuePriority[0]
+  const cueTrackId = cueField ? fieldsToTracks[cueField] : undefined
+  const trackIdsToUse = cueTrackId && subtitles[cueTrackId] ? [cueTrackId] : []
+  const tracksAsClips: ChunkClip[] = trackIdsToUse
     .flatMap((trackId) => {
       const track = subtitles[trackId]
       return track.chunks.map((chunk, i) => ({
@@ -198,12 +204,27 @@ function combineSubtitles(
           return overlapsSignificantly(
             lastRegionChunk,
             newItemChunk.start,
-            newItemChunk.end
+            newItemChunk.end,
+            thresholdMs
           )
         })
       })
 
-    if (continuingLastCard) {
+    const adjacentWithinThreshold = (() => {
+      if (!lastCard) return false
+      const lastCueIndexes = cueTrackId ? lastCard.fields[cueTrackId] || [] : []
+      const lastCueIndex = lastCueIndexes.length
+        ? lastCueIndexes[lastCueIndexes.length - 1]
+        : undefined
+      if (lastCueIndex == null || !cueTrackId) return false
+      const nextCueId = newItemIds.find((id) => id.startsWith(cueTrackId + DELIMITER))
+      if (!nextCueId) return false
+      const { chunk: lastCueChunk } = getChunkSpecs(subBaseClipId(cueTrackId, lastCueIndex))
+      const { chunk: nextCueChunk } = getChunkSpecs(nextCueId)
+      return nextCueChunk.start - lastCueChunk.end < thresholdMs
+    })()
+
+    if (continuingLastCard || adjacentWithinThreshold) {
       newItemIds.forEach((itemId) => {
         if (!lastRegion.itemIds.includes(itemId)) {
           const { chunkIndex, trackId } = getChunkSpecs(itemId)
@@ -227,6 +248,26 @@ function combineSubtitles(
       cards.push(newCard)
     }
   })
+  // ensure non-cue linked tracks' chunks are included per card by time overlap
+  const linkedTrackIds = fieldsCuePriority
+    .map((fn) => fieldsToTracks[fn])
+    .filter((id): id is string => Boolean(id))
+  const nonCueTrackIds = linkedTrackIds.filter(
+    (id) => id !== cueTrackId
+  )
+  for (const card of cards) {
+    for (const trackId of nonCueTrackIds) {
+      const track = subtitles[trackId]
+      if (!track) continue
+      const indices: number[] = []
+      track.chunks.forEach((chunk, i) => {
+        if (overlapsSignificantly(chunk, card.start, card.end, thresholdMs)) {
+          indices.push(i)
+        }
+      })
+      card.fields[trackId] = indices
+    }
+  }
   return { cards, cardsMap }
 }
 

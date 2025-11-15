@@ -9,6 +9,8 @@ declare type SettingsState = {
   warnBeforeConvertingMedia: boolean
   viewMode: ViewMode
   activeDictionaries?: { id: FileId; type: DictionaryFileType }[]
+  addHiraganaForJapanese?: boolean
+  subtitlesMergeThresholdMs?: number
 }
 
 declare type ViewMode = 'HORIZONTAL' | 'VERTICAL'

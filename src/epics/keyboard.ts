@@ -1,4 +1,4 @@
-import { filter, map, mergeMap, switchMap, takeUntil } from 'rxjs/operators'
+import { filter, map, mergeMap, switchMap, takeUntil, catchError } from 'rxjs/operators'
 import { fromEvent, from, of, merge, EMPTY } from 'rxjs'
 import { combineEpics, ofType } from 'redux-observable'
 import r from '../redux'
@@ -11,6 +11,57 @@ const keydownEpic: AppEpic = (action$, state$, effects) =>
   fromEvent<KeyboardEvent>(window, 'keydown').pipe(
     mergeMap((event) => {
       const { ctrlKey, key } = event
+
+      if (key.toLowerCase() === KEYS.tLowercase && !isTextFieldFocused()) {
+        event.preventDefault()
+        const links = r.getSubtitlesFlashcardFieldLinks(state$.value)
+        const trackId = links.meaning
+        if (trackId) {
+          const track = r.getSubtitlesTrack(state$.value, trackId)
+          return of(
+            track && track.mode === 'showing'
+              ? r.hideSubtitles(trackId)
+              : r.showSubtitles(trackId)
+          )
+        }
+        return EMPTY
+      }
+
+      if (key.toLowerCase() === KEYS.yLowercase && !isTextFieldFocused()) {
+        event.preventDefault()
+        const links = r.getSubtitlesFlashcardFieldLinks(state$.value)
+        const trackId = links.transcription
+        if (!trackId) return EMPTY
+        const track = r.getSubtitlesTrack(state$.value, trackId)
+        if (!track) return EMPTY
+        const currentMs = Math.floor(effects.getCurrentTime() * 1000)
+        const chunk = track.chunks.find(
+          (c) => currentMs >= c.start && currentMs <= c.end
+        )
+        if (!chunk || !chunk.text) return EMPTY
+        const text = chunk.text
+        const write = navigator.clipboard?.writeText
+        if (typeof write === 'function') {
+          return from(write(text)).pipe(
+            map(() => r.simpleMessageSnackbar('Copied subtitle to clipboard')),
+            catchError(() => of(r.simpleMessageSnackbar('Copy failed')))
+          )
+        }
+        try {
+          const ta = document.createElement('textarea')
+          ta.value = text
+          ta.style.position = 'fixed'
+          ta.style.opacity = '0'
+          document.body.appendChild(ta)
+          ta.focus()
+          ta.select()
+          document.execCommand('copy')
+          document.body.removeChild(ta)
+          return of(r.simpleMessageSnackbar('Copied subtitle to clipboard'))
+        } catch (err) {
+          return of(r.simpleMessageSnackbar('Copy failed'))
+        }
+      }
 
       if (
         key.toLowerCase() === KEYS.lLowercase &&

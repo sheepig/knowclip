@@ -199,14 +199,12 @@ export const readVttChunk = ({
 
 export const readSubsrtChunk = readVttChunk
 
-const HALF_SECOND = 500
-
 export const overlapsSignificantly = (
   chunk: { start: number; end: number },
   start: number,
-  end: number
-): boolean =>
-  start <= chunk.end - HALF_SECOND && end >= chunk.start + HALF_SECOND
+  end: number,
+  thresholdMs = 500
+): boolean => start <= chunk.end - thresholdMs && end >= chunk.start + thresholdMs
 
 const EMPTY_OBJECT = Object.freeze({})
 export const getSubtitlesFlashcardFieldLinks = (
@@ -356,11 +354,13 @@ export const getNewFlashcardForStretchedClip = (
     )
   )
 
+  const thresholdMs = state.settings.subtitlesMergeThresholdMs || 500
   function newlyOverlapped(overlappedCardBase: SubtitlesCardBase) {
     return !overlapsSignificantly(
       overlappedCardBase,
       unstretchedClip.start,
-      unstretchedClip.end
+      unstretchedClip.end,
+      thresholdMs
     )
   }
   const { front, back } = {
