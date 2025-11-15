@@ -9,7 +9,8 @@ import React, {
 import cn from 'clsx'
 import css from './FlashcardSectionDisplay.module.css'
 import FieldMenu from './FlashcardSectionFieldPopoverMenu'
-import { Tooltip } from '@mui/material'
+import { Tooltip, Popover, Box, Typography } from '@mui/material'
+import * as dictSelectors from '../selectors/dictionaryFiles'
 import { useSelector } from 'react-redux'
 import { ClozeControls } from '../utils/clozeField/useClozeControls'
 import r from '../redux'
@@ -26,6 +27,7 @@ const ClozeField = ({
   mediaFileId,
   value,
   clozeControls,
+  enableDictionaryHover,
 }: {
   className?: string
   fieldName: FlashcardFieldName
@@ -34,6 +36,7 @@ const ClozeField = ({
   mediaFileId: MediaFileId
   value: string
   clozeControls: ClozeControls
+  enableDictionaryHover?: boolean
 }) => {
   const {
     clozeIndex: currentClozeIndex = -1,
@@ -59,8 +62,9 @@ const ClozeField = ({
     }
   }, [currentClozeIndex, clozeInputRef, editing])
   const clozeId = ClozeIds[currentClozeIndex]
-  const { viewMode } = useSelector((state: AppState) => ({
+  const { viewMode, activeDicts } = useSelector((state: AppState) => ({
     viewMode: state.settings.viewMode,
+    activeDicts: dictSelectors.getActiveDictionaries(state).map((f) => ({ type: f.dictionaryType, key: f.key, id: f.id })),
   }))
 
   const cursorPosition = -1
@@ -161,13 +165,62 @@ const ClozeField = ({
     ? {
         title: clozeHint,
       }
-    : {
-        title:
-          deletions.length >= ClozeIds.length
-            ? "You've reached the maximum number of cloze deletions for this card."
-            : 'Select text and press C key to create a new cloze deletion card (a.k.a. fill-in-the blank).',
-        placement: 'top' as const,
+    : null
+
+  const [anchorEl, setAnchorEl] = React.useState<HTMLElement | null>(null)
+  const [position, setPosition] = React.useState<{ left: number; top: number } | null>(null)
+  const [candidates, setCandidates] = React.useState<Array<{ head: string; pronunciation: string | null; meanings: string[]; frequencyScore: number | null }>>([])
+
+  const handleMouseMove: React.MouseEventHandler<HTMLSpanElement> = async (e) => {
+    if (!enableDictionaryHover) return
+    const target = e.target as HTMLElement
+    const idxAttr = target.getAttribute('data-character-index')
+    if (!idxAttr) return
+    const index = Number(idxAttr)
+    if (Number.isNaN(index)) return
+    if (!value) return
+    const { lookupByIndex } = await import('../utils/dictionaries/lookupByIndex')
+    try {
+      const match = await lookupByIndex(value, index, activeDicts as Array<{ type: DictionaryFileType; key: number }>)
+      const { flattenMeanings } = await import('../utils/dictionaries/flatten')
+      const items = match ? match.candidates : []
+      const grouped: Record<string, Array<{ head: string; pronunciation: string | null; meanings: string[]; frequencyScore: number | null }>> = {}
+      items.forEach(({ entry, type }) => {
+        const active = activeDicts.find((d) => d.type === type && d.key === entry.dictionaryKey)
+        const key = active ? `${active.type}:${active.id}` : String(type)
+        const meanings = flattenMeanings(entry.meanings || [])
+        const obj = {
+          head: entry.head,
+          pronunciation: entry.pronunciation,
+          meanings,
+          frequencyScore: entry.frequencyScore,
+        }
+        grouped[key] = grouped[key] || []
+        const exists = grouped[key].some(
+          (g) => g.head === obj.head && g.pronunciation === obj.pronunciation && (g.meanings[0] || '') === (obj.meanings[0] || '')
+        )
+        if (!exists) grouped[key].push(obj)
+      })
+      const orderedGroups = activeDicts.map((d) => ({ type: `${d.type}:${d.id}`, entries: grouped[`${d.type}:${d.id}`] || [] }))
+      const mapped = orderedGroups.flatMap((g) => g.entries.map((e) => ({ ...e, _group: g.type }))).slice(0, 12)
+      if (mapped.length) {
+        setCandidates(mapped)
+        setAnchorEl(target)
+        setPosition({ left: e.clientX, top: e.clientY })
+      } else {
+        setAnchorEl(null)
+        setCandidates([])
       }
+    } catch (_err) {
+      setAnchorEl(null)
+      setCandidates([])
+    }
+  }
+  const handleMouseLeave: React.MouseEventHandler<HTMLSpanElement> = () => {
+    if (!enableDictionaryHover) return
+    setAnchorEl(null)
+    setCandidates([])
+  }
 
   return (
     <div
@@ -186,23 +239,54 @@ const ClozeField = ({
           fieldName={fieldName as TransliterationFlashcardFieldName}
         />
       )}
-      <Tooltip
-        key={value}
-        {...tooltipProps}
-      >
+      {tooltipProps ? (
+        <Tooltip key={value} {...tooltipProps}>
+          <span
+            className={cn(css.clozeFieldValue, clozeId, {
+              [css.clozePreviewFieldValue]: previewClozeIndex !== -1,
+            })}
+            tabIndex={0}
+            ref={clozeInputRef}
+            onMouseMove={handleMouseMove}
+            onMouseLeave={handleMouseLeave}
+          >
+            {segments}
+            {cursorPosition === value.length && (
+              <span className={css.clozeCursor} />
+            )}
+          </span>
+        </Tooltip>
+      ) : (
         <span
           className={cn(css.clozeFieldValue, clozeId, {
             [css.clozePreviewFieldValue]: previewClozeIndex !== -1,
           })}
           tabIndex={0}
           ref={clozeInputRef}
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
         >
           {segments}
           {cursorPosition === value.length && (
             <span className={css.clozeCursor} />
           )}
         </span>
-      </Tooltip>
+      )}
+      <Popover
+        open={Boolean(anchorEl) && Boolean(candidates.length)}
+        anchorReference="anchorPosition"
+        anchorPosition={position || { left: 0, top: 0 }}
+        onClose={() => setAnchorEl(null)}
+      >
+        <Box sx={{ p: 1, maxWidth: 320 }}>
+          {candidates.map((c, i) => (
+            <Box key={c.head + String(i)} sx={{ mb: 0.5 }}>
+              <Typography variant="subtitle2">{c.head}{c.pronunciation ? ` ・ ${c.pronunciation}` : ''}</Typography>
+              <Typography variant="body2">{c.meanings.join('; ')}</Typography>
+            </Box>
+          ))}
+        </Box>
+      </Popover>
     </div>
   )
 }

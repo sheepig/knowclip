@@ -1,4 +1,5 @@
 import React, { ReactChild } from 'react'
+import { useSelector } from 'react-redux'
 import cn from 'clsx'
 import css from './FlashcardSectionDisplay.module.css'
 import { TransliterationFlashcardFields } from '../types/Project'
@@ -61,6 +62,7 @@ const FlashcardSectionDisplay = ({
                 mediaFileId={mediaFile.id}
                 value={fields.transcription}
                 clozeControls={clozeControls}
+                enableDictionaryHover={false}
               />
             )}
           </div>
@@ -74,6 +76,7 @@ const FlashcardSectionDisplay = ({
             title={fieldHoverText}
             className={cn(css.previewFieldTranscription)}
             fieldValueRef={fieldValueRef}
+            enableDictionaryHover={false}
           >
             {fields.transcription || null}
           </FlashcardDisplayField>
@@ -91,16 +94,19 @@ const FlashcardSectionDisplay = ({
             {fields.pronunciation}
           </FlashcardDisplayField>
         )}
-        <FlashcardDisplayField
-          fieldName="meaning"
-          subtitles={mediaFile.subtitles}
-          linkedTracks={fieldsToTracks}
-          mediaFileId={mediaFile.id}
-          onDoubleClick={onDoubleClickField}
-          title={fieldHoverText}
-        >
-          {fields.meaning || null}
-        </FlashcardDisplayField>
+          <FlashcardDisplayField
+            fieldName="meaning"
+            subtitles={mediaFile.subtitles}
+            linkedTracks={fieldsToTracks}
+            mediaFileId={mediaFile.id}
+            onDoubleClick={onDoubleClickField}
+            title={fieldHoverText}
+            className={cn({
+              [css.meaningHidden]: (useSelector((state: AppState) => state.settings.meaningHidden) || false),
+            })}
+          >
+            {fields.meaning || null}
+          </FlashcardDisplayField>
         {fields.notes && (
           <FlashcardDisplayField
             fieldName="notes"
@@ -114,10 +120,28 @@ const FlashcardSectionDisplay = ({
             {fields.notes}
           </FlashcardDisplayField>
         )}
+        {('dictionary' in (fields as any)) && (fields as any).dictionary && (
+          <FlashcardDisplayField
+            fieldName={'dictionary' as any}
+            subtitles={mediaFile.subtitles}
+            linkedTracks={fieldsToTracks}
+            mediaFileId={mediaFile.id}
+            onDoubleClick={onDoubleClickField}
+            title={'Dictionary entries'}
+            className={cn(css.previewFieldNotes)}
+          >
+            {(fields as any).dictionary}
+          </FlashcardDisplayField>
+        )}
       </section>
 
-      <section className={css.menu}>{menuItems}</section>
-      <section className={css.secondaryMenu}>{secondaryMenuItems}</section>
+      <section className={css.secondaryMenu}>
+        <div className={css.actionsRow}>
+          {secondaryMenuItems}
+          <span className={css.menuDivider} />
+          {menuItems}
+        </div>
+      </section>
     </section>
   )
 }

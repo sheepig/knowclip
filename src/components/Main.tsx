@@ -193,6 +193,36 @@ const Main = () => {
   })
 
   useEffect(() => {
+    const handler = (e: any) => {
+      const evtType: string = e?.type || ''
+      if (evtType === 'ipc:anki-add-note') {
+        try {
+          const payload = typeof e?.payload === 'string' ? JSON.parse(e.payload) : e.payload
+          const notes = payload?.notes || (payload?.note ? [payload.note] : [])
+          const first = notes[0]
+          const fieldsObj = first?.fields || {}
+          const dictText = typeof fieldsObj?.dictionary === 'string' && fieldsObj.dictionary.trim()
+            ? (fieldsObj.dictionary as string).trim()
+            : (Object.values(fieldsObj).filter((v) => typeof v === 'string') as string[]).join('\n').trim()
+          const targetId = highlightedClipId || waveform.state.selection?.item?.id || null
+          if (editing && targetId && dictText) {
+            dispatch(actions.setFlashcardField(targetId, 'dictionary' as any, dictText, 0))
+          } else {
+            dispatch(
+              actions.simpleMessageSnackbar(
+                'Dictionary entries can only be added while editing a card.',
+                4000
+              )
+            )
+          }
+        } catch (_err) {}
+      }
+    }
+    window.addEventListener('ipc:anki-add-note', handler)
+    return () => window.removeEventListener('ipc:anki-add-note', handler)
+  }, [dispatch, highlightedClipId, waveform.state.selection, editing])
+
+  useEffect(() => {
     if (selection.selection.item !== previousSelection?.item) {
       const newSelection = selection.item
         ? {
@@ -319,7 +349,7 @@ const Main = () => {
           }>
             <IconButton
               size="small"
-              style={{ position: 'absolute', top: 8, right: 8 }}
+              style={{ position: 'absolute', top: 8, right: 8, color: '#fff' }}
             >
               <HelpOutline />
             </IconButton>
