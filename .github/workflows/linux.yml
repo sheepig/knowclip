@@ -33,10 +33,11 @@ jobs:
         name: List the state of node modules
         continue-on-error: true
         run: npm list
-      - name: npm install and test
+      - name: npm install (skip postinstall in fork)
         run: |
-          npm ci
-      - name: integration tests
+          npm ci --ignore-scripts
+      - name: integration tests (upstream only)
+        if: ${{ github.event.repository.fork != true }}
         run: |
           export DISPLAY=':99.0'
           Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &

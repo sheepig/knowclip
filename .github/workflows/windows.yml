@@ -20,9 +20,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - name: integration test
+      - name: install (skip postinstall in fork)
         run: |
-          npm ci
+          npm ci --ignore-scripts
+      - name: integration test (upstream only)
+        if: ${{ github.event.repository.fork != true }}
+        run: |
           npm run integration:win -- "sharedProject"
         env:
           VITEST: true
