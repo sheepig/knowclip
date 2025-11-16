@@ -70,7 +70,7 @@
   "main": "./out/main/main.js",
   "homepage": "./",
   "scripts": {
-    "postinstall": "electron-builder install-app-deps && npm run replace-in-files-cli -- --string='import { bpfrpt_proptype_WindowScroller } from \"../WindowScroller.js\";' --replacement='' node_modules/**/onScroll.js",
+    "postinstall": "electron-builder install-app-deps && node node_modules/ffmpeg-static/install.js || true && npm run replace-in-files-cli -- --string='import { bpfrpt_proptype_WindowScroller } from \"../WindowScroller.js\";' --replacement='' node_modules/**/onScroll.js",
     "start": "npm run electron-vite",
     "build:homepage": "npm run --prefix homepage build",
     "test": "npm run vitest run -- --config ./vitest.config.ts",

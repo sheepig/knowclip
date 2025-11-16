@@ -1,4 +1,5 @@
 import { basename } from 'path'
+import { existsSync } from 'fs'
 
 import ffmpeg, { FfprobeData } from 'fluent-ffmpeg'
 import { failure } from '../utils/result'
@@ -12,7 +13,19 @@ const ffmpegStaticBasePath = ffmpegStaticBasePathViaRequire
 const ffprobeStaticBasePath = ffprobeStaticBasePathViaRequire
 
 const getFfmpegStaticPath = (basePath: string) =>
-  basePath.replace('app.asar', 'app.asar.unpacked') // won't do anything in development
+  basePath.replace('app.asar', 'app.asar.unpacked')
+
+const candidates = [
+  '/opt/homebrew/bin/ffmpeg',
+  '/usr/local/bin/ffmpeg',
+  '/usr/bin/ffmpeg',
+]
+
+const probeCandidates = [
+  '/opt/homebrew/bin/ffprobe',
+  '/usr/local/bin/ffprobe',
+  '/usr/bin/ffprobe',
+]
 
 console.log({
   ffmpegStaticBasePath,
@@ -23,13 +36,19 @@ console.log({
 
 if (!ffmpegStaticBasePath) throw new Error('ffmpeg-static path not found')
 if (!ffprobeStaticBasePath) throw new Error('ffprobe-static path not found')
-const ffmpegPaths = {
+const staticPaths = {
   ffmpeg: getFfmpegStaticPath(ffmpegStaticBasePath),
   ffprobe: getFfmpegStaticPath(ffprobeStaticBasePath),
 }
+const resolvedFfmpegPath = existsSync(staticPaths.ffmpeg)
+  ? staticPaths.ffmpeg
+  : candidates.find((p) => existsSync(p)) || 'ffmpeg'
+const resolvedFfprobePath = existsSync(staticPaths.ffprobe)
+  ? staticPaths.ffprobe
+  : probeCandidates.find((p) => existsSync(p)) || 'ffprobe'
 try {
-  ffmpeg.setFfmpegPath(ffmpegPaths.ffmpeg)
-  ffmpeg.setFfprobePath(ffmpegPaths.ffprobe)
+  ffmpeg.setFfmpegPath(resolvedFfmpegPath)
+  ffmpeg.setFfprobePath(resolvedFfprobePath)
 } catch (error) {
   console.error('Error setting ffmpeg paths:', error)
   throw error
