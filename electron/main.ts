@@ -1,4 +1,5 @@
 import { BrowserWindow, screen, app, ipcMain } from 'electron'
+// app.commandLine.appendSwitch('enable-features', 'PlatformHEVCDecoderSupport')
 import * as path from 'path'
 import * as url from 'url'
 import * as Sentry from '@sentry/electron/main'

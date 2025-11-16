@@ -35,7 +35,8 @@ export const COMPATIBLE_VIDEO_CODECS = {
   vp8: 'VP8',
   vp9: 'VP9',
   h264: 'H.264',
-  // h265: 'H.265', "[Google Chrome only and only where supported by the underlying OS]" https://www.chromium.org/audio-video/
+  // hevc: 'hevc'
+  // h265: 'H.265', "[Google Chrome
 }
 
 export type CompatibleVideoCodec = keyof typeof COMPATIBLE_VIDEO_CODECS
