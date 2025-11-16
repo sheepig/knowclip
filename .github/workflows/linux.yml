@@ -66,5 +66,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist/Knowclip_*
+          path: dist/KnowclipExtra_*
       # release steps removed to avoid notifications in upstream or external users
