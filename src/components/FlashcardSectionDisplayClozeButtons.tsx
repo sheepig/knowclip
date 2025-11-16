@@ -52,19 +52,7 @@ const ClozeButtons = ({
     buttons.push(
       <ClozeButton
         key={nextId}
-        hoverText={
-          currentClozeIndex === -1
-            ? `Make cloze deletion (${getKeyboardShortcut(
-                'Start making cloze deletion'
-              )} key)`
-            : currentClozeIndex === deletions.length
-            ? `Stop editing cloze deletions (${getKeyboardShortcut(
-                'Stop making cloze deletion'
-              )})`
-            : `Make a new cloze deletion card (${getKeyboardShortcut(
-                'Start making cloze deletion'
-              )} key)`
-        }
+        hoverText={`Select text and press C key to create a new cloze deletion card (a.k.a. fill-in-the blank).`}
         index={deletions.length}
         id={nextId}
         isActive={currentClozeIndex === deletions.length}

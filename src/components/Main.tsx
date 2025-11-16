@@ -205,15 +205,17 @@ const Main = () => {
             ? (fieldsObj.dictionary as string).trim()
             : (Object.values(fieldsObj).filter((v) => typeof v === 'string') as string[]).join('\n').trim()
           const targetId = highlightedClipId || waveform.state.selection?.item?.id || null
-          if (editing && targetId && dictText) {
-            dispatch(actions.setFlashcardField(targetId, 'dictionary' as any, dictText, 0))
+          const configuredFields: string[] = Array.isArray(payload?.configuredFields) ? payload.configuredFields : []
+          if (editing && targetId) {
+            if (dictText) dispatch(actions.setFlashcardField(targetId, 'dictionary' as any, dictText, 0))
+            configuredFields.forEach((name) => {
+              const v = fieldsObj?.[name]
+              if (typeof v === 'string' && v.trim()) {
+                dispatch(actions.setFlashcardField(targetId, name as any, v, 0))
+              }
+            })
           } else {
-            dispatch(
-              actions.simpleMessageSnackbar(
-                'Dictionary entries can only be added while editing a card.',
-                4000
-              )
-            )
+            dispatch(actions.startEditingCards())
           }
         } catch (_err) {}
       }

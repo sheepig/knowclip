@@ -88,7 +88,7 @@ export type ProjectJson<F extends FlashcardFields> = {
 
 export type SubtitlesFlashcardFieldsLinks = Partial<
   Record<
-    'transcription' | 'pronunciation' | 'meaning' | 'notes',
+    'transcription' | 'pronunciation' | 'meaning' | 'notes' | 'dictionary',
     SubtitlesTrackId
   >
 >

@@ -148,6 +148,24 @@
   text-align: left;
   background-color: rgba(255,255,255,0.8);
   border-radius: 1.4em;
+  /* border-right: 1px solid rgba(0,0,0,0.2); */
+  padding-right: 0.75rem;
+  margin-right: 0.75rem;
+}
+
+.actionsRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.6rem;
+}
+
+.menuDivider {
+  display: inline-block;
+  width: 1px;
+  height: 1.6em;
+  background-color: rgba(0,0,0,0.25);
+  margin: 0 .5rem;
 }
 
 .clozeButtons {
@@ -197,6 +215,9 @@
     display: inline;
     position: relative;
 }
+.meaningHidden .fieldValue {
+  color: transparent;
+}
 .clozeFieldValue {
   composes: fieldValue;
   color: black;
@@ -244,4 +265,3 @@
   background-color: hsla(var(--cloze-selection-hue), 100%, 90%, 75%);
   color: hsl(calc(var(--cloze-selection-hue) + 150), 100%, 30%);
 }
-

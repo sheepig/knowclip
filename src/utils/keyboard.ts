@@ -27,6 +27,8 @@ export const KEYS = {
   tUppercase: 'T',
   yLowercase: 'y',
   yUppercase: 'Y',
+  mLowercase: 'm',
+  mUppercase: 'M',
   arrowLeft: 'ArrowLeft',
   arrowRight: 'ArrowRight',
   cmd: 'Meta',

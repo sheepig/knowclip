@@ -32,8 +32,12 @@ const FlashcardSectionFieldPopoverMenu = ({
       <Tooltip
         title={
           linkedSubtitlesTrack
-            ? 'Link/unlink subtitles track'
-            : 'Link subtitles track'
+            ? (fieldName === 'meaning'
+                ? 'Link/unlink subtitles track. You can use shortcut M to show or hide meaning subtitles.'
+                : 'Link/unlink subtitles track')
+            : (fieldName === 'meaning'
+                ? 'Link subtitles track. You can use shortcut M to show or hide meaning subtitles.'
+                : 'Link subtitles track')
         }
       >
         <IconButton

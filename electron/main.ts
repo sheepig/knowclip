@@ -10,6 +10,7 @@ import { handleMessages } from '../src/messages'
 import { interceptLogs } from './interceptLogs'
 import { SENTRY_DSN_URL } from './SENTRY_DSN_URL'
 import { startLocalFileServer } from './localFileServer/setup'
+import { startAnkiConnectShim } from './ankiConnectShim'
 
 const { isPackaged } = app
 const isTesting = process.env.VITEST
@@ -167,6 +168,36 @@ app.whenReady().then(async () => {
   console.log(`Setting up menu`)
   setUpMenu(context.mainWindow as BrowserWindow, true)
   console.log(`Menu set up`)
+  // Start AnkiConnect shim conditionally based on settings
+  if (context.mainWindow) {
+    try {
+      const conf = new Conf()
+      const persistedRoot =
+        (conf.get('persist:root') as any) || (conf.get('root') as any) || null
+      let settings: any = null
+      if (persistedRoot && typeof persistedRoot === 'string') {
+        const parsed = JSON.parse(persistedRoot)
+        settings = parsed?.settings || null
+      } else if (persistedRoot && typeof persistedRoot === 'object') {
+        settings = persistedRoot?.settings || null
+      }
+      if (settings && typeof settings === 'string') {
+        try {
+          settings = JSON.parse(settings)
+        } catch {}
+      }
+      console.log('global settings', settings)
+      const tmpl = settings?.youmitan2AnkiTemplate || null
+      const nameOk = typeof tmpl?.templateName === 'string' && tmpl.templateName.trim()
+      const paramsOk = typeof tmpl?.templateParams === 'string' && tmpl.templateParams.trim()
+      console.log('Youmitan2AnkiTemplate.templateName =', tmpl?.templateName)
+      console.log('Youmitan2AnkiTemplate.templateParams =', tmpl?.templateParams)
+      if (nameOk && paramsOk) await startAnkiConnectShim(context.mainWindow)
+      else console.log('AnkiConnect shim disabled: missing template config')
+    } catch (e) {
+      console.log('Failed to read settings, not starting AnkiConnect shim')
+    }
+  }
   handleMessages(
     context.mainWindow as BrowserWindow,
     filePathsRegistry,

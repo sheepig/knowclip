@@ -17,6 +17,7 @@ import {
   ListItemIcon,
   FormControlLabel,
   Checkbox,
+  TextField,
 } from '@mui/material'
 import { actions } from '../../actions'
 import * as selectors from '../../selectors'
@@ -254,15 +255,86 @@ const SettingsDialog = ({ open }: DialogProps<SettingsDialogData>) => {
             </p>
           </Paper>
 
+        <section className={css.settingsGroupDescription}>
+          <p>
+            Import a free dictionary so you can look up words quickly inside
+            the Knowclip app.
+          </p>
+          <p>
+            Dictionaries aren't bundled with Knowclip automatically because
+            they take up lots of disk space. You may import a free dictionary
+            of your choice, according to your needs.
+          </p>
+          <p style={{ color: 'red', fontSize: '0.85em' }}>
+            build-in dictionaries are not working
+          </p>
+        </section>
+        </section>
+
+        <section className={css.settingsGroup}>
+          <Paper className={css.settingsGroupBody}>
+            <h3 className={css.heading}>Yomichan → Anki template</h3>
+            <FormControl className={css.formControl} margin="normal" fullWidth>
+              <TextField
+                value={settings.youmitan2AnkiTemplate?.templateName || ''}
+                onChange={useCallback(
+                  (e) =>
+                    dispatchLocal(
+                      actions.overrideSettings({
+                        youmitan2AnkiTemplate: {
+                          ...settings.youmitan2AnkiTemplate,
+                          templateName: e.target.value,
+                        },
+                      })
+                    ),
+                  [dispatchLocal, settings.youmitan2AnkiTemplate]
+                )}
+                placeholder="Template deck name (deckNames)"
+              />
+            </FormControl>
+            <FormControl className={css.formControl} margin="normal" fullWidth>
+              <TextField
+                value={settings.youmitan2AnkiTemplate?.templateParams || ''}
+                onChange={useCallback(
+                  (e) =>
+                    dispatchLocal(
+                      actions.overrideSettings({
+                        youmitan2AnkiTemplate: {
+                          ...settings.youmitan2AnkiTemplate,
+                          templateParams: e.target.value,
+                        },
+                      })
+                    ),
+                  [dispatchLocal, settings.youmitan2AnkiTemplate]
+                )}
+                placeholder="Template fields (comma-separated)"
+              />
+            </FormControl>
+            <FormControl className={css.formControl} margin="normal" fullWidth>
+              <TextField
+                value={settings.youmitan2AnkiTemplate?.modelNames || ''}
+                onChange={useCallback(
+                  (e) =>
+                    dispatchLocal(
+                      actions.overrideSettings({
+                        youmitan2AnkiTemplate: {
+                          ...settings.youmitan2AnkiTemplate,
+                          modelNames: e.target.value,
+                        },
+                      })
+                    ),
+                  [dispatchLocal, settings.youmitan2AnkiTemplate]
+                )}
+                placeholder="Enter local Anki model name"
+              />
+            </FormControl>
+          </Paper>
           <section className={css.settingsGroupDescription}>
             <p>
-              Import a free dictionary so you can look up words quickly inside
-              the Knowclip app.
+              Configure the template name and fields used by the local AnkiConnect simulation. If both fields are empty, the simulation will be disabled.
             </p>
             <p>
-              Dictionaries aren't bundled with Knowclip automatically because
-              they take up lots of disk space. You may import a free dictionary
-              of your choice, according to your needs.
+              After configuring and mapping Yomichan deck and Anki note fields, the local AnkiConnect simulation can intercept dictionary content and add it to your created cards. This feature requires app restart, and Anki must not be running.
             </p>
           </section>
         </section>

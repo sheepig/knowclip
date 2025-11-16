@@ -9,6 +9,8 @@ export const initialState: SettingsState = {
   viewMode: 'VERTICAL',
   addHiraganaForJapanese: false,
   subtitlesMergeThresholdMs: 500,
+  meaningHidden: false,
+  youmitan2AnkiTemplate: { templateName: '', templateParams: '', modelNames: '' },
 }
 
 const settings: Reducer<SettingsState, Action> = (

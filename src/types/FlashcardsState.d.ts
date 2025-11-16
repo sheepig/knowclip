@@ -4,6 +4,7 @@ declare interface FlashcardFields {
   transcription: string
   meaning: string
   notes: string
+  dictionary?: string
 }
 
 declare type FlashcardFieldName =
@@ -15,6 +16,7 @@ declare type TransliterationFlashcardFieldName =
   | 'meaning'
   | 'notes'
   | 'pronunciation'
+  | 'dictionary'
 
 // change to note?
 declare type Flashcard = SimpleFlashcard | TransliterationFlashcard

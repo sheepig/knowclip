@@ -98,6 +98,12 @@ const keydownEpic: AppEpic = (action$, state$, effects) =>
         return EMPTY
       }
 
+      if (key.toLowerCase() === KEYS.mLowercase && !isTextFieldFocused()) {
+        event.preventDefault()
+        const hidden = Boolean((state$.value.settings as any).meaningHidden)
+        return of(r.overrideSettings({ meaningHidden: !hidden }))
+      }
+
       if (key === KEYS.escape) {
         if (r.getCurrentDialog(state$.value) || (window as any).cloze)
           return of({ type: 'NOOP_ESC_KEY' } as unknown as Action)

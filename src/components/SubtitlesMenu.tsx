@@ -17,7 +17,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import * as selectors from '../selectors'
 import { actions } from '../actions'
-import { TextField, Box } from '@mui/material'
+import { TextField, Box, Switch, FormControlLabel } from '@mui/material'
 import {
   IconButton,
   Icon,
@@ -41,7 +41,7 @@ import { AnyAction, Dispatch } from 'redux'
 const SubtitlesMenu = () => {
   const { anchorEl, anchorCallbackRef, open, close, isOpen } = usePopover()
 
-  const { subtitles, currentFileId, fieldNamesToTrackIds, mergeThresholdMs } = useSelector(
+  const { subtitles, currentFileId, fieldNamesToTrackIds, mergeThresholdMs, includeStillByDefault } = useSelector(
     (state: AppState) => {
       const currentFileId = selectors.getCurrentFileId(state)
       return {
@@ -49,6 +49,7 @@ const SubtitlesMenu = () => {
         currentFileId,
         fieldNamesToTrackIds: selectors.getSubtitlesFlashcardFieldLinks(state),
         mergeThresholdMs: state.settings.subtitlesMergeThresholdMs || 500,
+        includeStillByDefault: selectors.getDefaultIncludeStill(state),
       }
     }
   )
@@ -118,6 +119,25 @@ const SubtitlesMenu = () => {
                 No subtitles loaded.
               </MenuItem>
             )}
+            <Divider />
+            <MenuItem dense disabled>
+              <ListItemText primary="Card Creation Settings" />
+            </MenuItem>
+            <MenuItem dense>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={includeStillByDefault}
+                    onChange={(e) =>
+                      dispatch(
+                        actions.setDefaultClipSpecs({ includeStill: e.target.checked })
+                      )
+                    }
+                  />
+                }
+                label="Create image when creating a card"
+              />
+            </MenuItem>
             <Divider />
             <MenuItem dense disabled>
               <ListItemText primary="Subtitle Track Settings" />

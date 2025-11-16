@@ -11,6 +11,12 @@ declare type SettingsState = {
   activeDictionaries?: { id: FileId; type: DictionaryFileType }[]
   addHiraganaForJapanese?: boolean
   subtitlesMergeThresholdMs?: number
+  meaningHidden?: boolean
+  youmitan2AnkiTemplate?: {
+    templateName?: string
+    templateParams?: string
+    modelNames?: string
+  }
 }
 
 declare type ViewMode = 'HORIZONTAL' | 'VERTICAL'
