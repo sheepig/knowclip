@@ -39,6 +39,16 @@ const projectToMarkdown = (
             throw new Error('Could not find clip/flashcard')
 
           const clipTime = r.getClipTimeInSeconds(state, flashcard.id)
+          const extraFieldNames = String(
+            ((state.settings as any)?.youmitan2AnkiTemplate?.templateParams || '')
+          )
+            .split(',')
+            .map((s) => s.trim())
+            .filter(Boolean)
+          const extraFieldsList = extraFieldNames
+            .map((name) => ((flashcard.fields as any)[name] as string) || '')
+            .filter((s) => Boolean((s || '').trim()))
+            .map((raw) => `* ${raw}`)
           return [
             clipTime
               ? `\n**${formatTime(clipTime.start)} - ${formatTime(
@@ -58,6 +68,7 @@ const projectToMarkdown = (
                   `* ${flashcard.fields.notes}`,
                 ]
             ).map((rawString) => rawString.replace(/[\n\r]/g, '<br>')),
+            ...extraFieldsList.map((rawString) => rawString.replace(/[\n\r]/g, '<br>')),
           ]
         }),
       ]

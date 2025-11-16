@@ -38,15 +38,21 @@ const ReviewAndExportMediaTableRow = memo(
     measure,
     registerChild,
   }: FlashcardRowProps) => {
-    const {
-      flashcard: { fields, tags, cloze },
-      formattedClipTime,
-      isLoopOn,
-    } = useSelector((state: AppState) => ({
-      flashcard: r.getFlashcard(state, id) as Flashcard,
-      formattedClipTime: r.getFormattedClipTime(state, id),
-      isLoopOn: r.getLoopState(state),
-    }))
+  const {
+    flashcard: { fields, tags, cloze },
+    formattedClipTime,
+    isLoopOn,
+  } = useSelector((state: AppState) => ({
+    flashcard: r.getFlashcard(state, id) as Flashcard,
+    formattedClipTime: r.getFormattedClipTime(state, id),
+    isLoopOn: r.getLoopState(state),
+  }))
+    const extraFieldNames = String(
+      (useSelector((state: AppState) => (state.settings as any)?.youmitan2AnkiTemplate?.templateParams) || '')
+    )
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
 
     const dispatch = useDispatch()
     const toggleLoop = useCallback(
@@ -143,6 +149,16 @@ const ReviewAndExportMediaTableRow = memo(
           </p>
           {fields.notes.trim() && (
             <p className={cn(css.field, css.notes)}>{fields.notes}</p>
+          )}
+          {extraFieldNames.map((name) => (
+            (((fields as any)[name] || '').trim()) ? (
+              <p key={`extra_${name}`} className={cn(css.field, css.notes)}>
+                {(fields as any)[name]}
+              </p>
+            ) : null
+          ))}
+          {('dictionary' in (fields as any)) && ((fields as any).dictionary || '').trim() && (
+            <p className={cn(css.field, css.notes)}>{(fields as any).dictionary}</p>
           )}
         </section>
         <section className={css.tags}>

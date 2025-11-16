@@ -35,6 +35,13 @@ const FlashcardSectionPreview = ({
     const text = trackId && tracksToFieldsText[trackId]
     fields[fieldName] = text || ''
   }
+  const extraFieldNames = String(
+    (useSelector((state: AppState) => (state.settings as any)?.youmitan2AnkiTemplate?.templateParams) || '')
+  )
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  extraFieldNames.forEach((name) => ((fields as any)[name] = (fields as any)[name] || ''))
 
   const dispatch = useDispatch()
   const startEditing = useCallback(() => {

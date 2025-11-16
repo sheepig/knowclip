@@ -190,13 +190,17 @@ function getProjectClips<F extends FlashcardFields>(
       }
 
       const newFields = {}
-      Object.keys(fieldsTemplate).reduce((all, fn) => {
+      const unionFieldNames = Array.from(
+        new Set([...Object.keys(fieldsTemplate), ...Object.keys(fields as any)])
+      )
+      unionFieldNames.reduce((all, fn) => {
         const fieldName: keyof typeof fields = fn as any
-        if (fields[fieldName].trim()) {
-          all[fieldName] =
+        const value = (fields as any)[fieldName]
+        if (typeof value === 'string' && value.trim()) {
+          ;(all as any)[fieldName] =
             fieldName === 'transcription' && cloze.length
-              ? encodeClozeDeletions(fields[fieldName], cloze)
-              : fields[fieldName]
+              ? encodeClozeDeletions(value, cloze)
+              : value
         }
 
         return all
@@ -246,8 +250,21 @@ export const encodeClozeDeletions = (text: string, cloze: ClozeDeletion[]) => {
   return result
 }
 
-const getFieldsTemplate = (file: ProjectFile) =>
-  file.noteType === 'Simple' ? blankSimpleFields : blankTransliterationFields
+const getFieldsTemplate = (state: AppState, file: ProjectFile) => {
+  const base = file.noteType === 'Simple' ? blankSimpleFields : blankTransliterationFields
+  const extraFieldNames = String(
+    ((state.settings as any)?.youmitan2AnkiTemplate?.templateParams || '')
+  )
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const extras = extraFieldNames.reduce((acc, name) => {
+    ;(acc as any)[name] = ''
+    return acc
+  }, {} as any)
+  ;(extras as any)['dictionary'] = ''
+  return { ...(base as any), ...extras }
+}
 
 export const getProjectFileContents = (
   state: AppState,
@@ -257,7 +274,7 @@ export const getProjectFileContents = (
   const { project, media } = getProjectJson(
     state,
     projectFile,
-    getFieldsTemplate(projectFile),
+    getFieldsTemplate(state, projectFile),
     timestamp
   )
   return (
