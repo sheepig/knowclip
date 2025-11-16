@@ -164,9 +164,9 @@
     "temp-dir": "2.0.0"
   },
   "build": {
-    "appId": "com.electron.knowclip",
+    "appId": "com.electron.knowclipExtra",
     "asar": true,
-    "productName": "Knowclip",
+    "productName": "KnowclipExtra",
     "npmRebuild": true,
     "copyright": "Copyright 2020 Justin Silvestre",
     "files": [
