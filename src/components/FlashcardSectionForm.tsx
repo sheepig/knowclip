@@ -134,6 +134,12 @@ const FlashcardSectionForm = memo(
       inputProps: FIELD_INPUT_PROPS,
       onKeyPress: loopOnInteract,
     }
+    const extraFieldNames = String(
+      (useSelector((state: AppState) => (state.settings as any)?.youmitan2AnkiTemplate?.templateParams) || '')
+    )
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
 
     return (
       <form
@@ -174,6 +180,17 @@ const FlashcardSectionForm = memo(
                 />
               )
             })}
+          {extraFieldNames.map((name) => (
+            <Field
+              key={`${name}_${flashcard.id}`}
+              name={name as any}
+              subtitles={subtitles}
+              linkedSubtitlesTrack={null}
+              onFocus={handleFocus}
+              className={css.notesField}
+              {...fieldProps}
+            />
+          ))}
           <TagsInput
             options={allTags}
             tags={flashcard.tags}

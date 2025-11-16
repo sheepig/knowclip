@@ -120,6 +120,26 @@ const FlashcardSectionDisplay = ({
             {fields.notes}
           </FlashcardDisplayField>
         )}
+        {String((useSelector((state: AppState) => (state.settings as any)?.youmitan2AnkiTemplate?.templateParams) || ''))
+          .split(',')
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .map((name) => (
+            ((fields as any)[name] || '').trim() ? (
+              <FlashcardDisplayField
+                key={`custom_${name}`}
+                fieldName={name as any}
+                subtitles={mediaFile.subtitles}
+                linkedTracks={fieldsToTracks}
+                mediaFileId={mediaFile.id}
+                onDoubleClick={onDoubleClickField}
+                title={fieldHoverText}
+                className={cn(css.previewFieldNotes)}
+              >
+                {(fields as any)[name]}
+              </FlashcardDisplayField>
+            ) : null
+          ))}
         {('dictionary' in (fields as any)) && (fields as any).dictionary && (
           <FlashcardDisplayField
             fieldName={'dictionary' as any}
