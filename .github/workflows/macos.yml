@@ -7,6 +7,7 @@ on:
 
 jobs:
   mac_build:
+    if: ${{ github.event.repository.fork == true }}
     runs-on: macos-13
 
     strategy:
@@ -50,17 +51,6 @@ jobs:
           # one for electron builder, one for vite
           BUILD_NUMBER: ${{ github.run_number }}.${{ github.run_id }}.${{ github.run_attempt }}
           VITE_BUILD_NUMBER: ${{ github.run_number }}.${{ github.run_id }}.${{ github.run_attempt }}
-      - name: Create Release
-        if: startsWith(github.ref, 'refs/tags/')
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          draft: true
-          prerelease: false
       - name: Upload test screenshots
         if: always()
         uses: actions/upload-artifact@v4
@@ -78,11 +68,4 @@ jobs:
         with:
           name: dist
           path: dist/Knowclip_*
-      - name: Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          draft: true
-          files: dist/Knowclip_*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # release steps removed to avoid notifications in upstream or external users

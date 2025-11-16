@@ -7,6 +7,7 @@ on:
 
 jobs:
   linux_build_and_test:
+    if: ${{ github.event.repository.fork == true }}
     runs-on: ubuntu-latest
 
     strategy:
@@ -65,11 +66,4 @@ jobs:
         with:
           name: dist
           path: dist/Knowclip_*
-      - name: Release
-        if: startsWith(github.ref, 'refs/tags/')
-        uses: softprops/action-gh-release@v1
-        with:
-          draft: true
-          files: dist/Knowclip_*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # release steps removed to avoid notifications in upstream or external users
