@@ -198,4 +198,11 @@ export const updates = {
     ...file,
     mediaFileIds: file.mediaFileIds.filter((id) => id !== mediaFileId),
   }),
+  [FileUpdateName.SetSubtitlesMergeThresholdMs]: (
+    file,
+    thresholdMs: number
+  ) => ({
+    ...file,
+    subtitlesMergeThresholdMs: thresholdMs,
+  }),
 } satisfies FileUpdatesForFileType<ProjectFile>

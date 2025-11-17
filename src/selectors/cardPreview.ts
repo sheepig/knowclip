@@ -1,8 +1,9 @@
 import { createSelector } from 'reselect'
 import {
   getSubtitlesFlashcardFieldLinks,
-  overlapsSignificantly,
+  overlapsSignificantlyWithThreshold,
 } from './subtitles'
+import { getProjectSubtitlesMergeThresholdMs } from './project'
 import { getCurrentMediaFile } from './currentMedia'
 import { calculateRegions, PrimaryClip, WaveformRegion } from 'clipwave'
 import { getRegionEnd } from '../utils/clipwave/useWaveformEventHandlers'
@@ -54,11 +55,13 @@ export const getSubtitlesCardBases = createSelector(
   getCurrentMediaFile,
   getSubtitlesFlashcardFieldLinks,
   getSubtitlesCardBaseFieldPriority,
+  getProjectSubtitlesMergeThresholdMs,
   (
     subtitles,
     currentFile,
     fieldsToTracks,
-    fieldsCuePriority
+    fieldsCuePriority,
+    mergeThresholdMs
   ): SubtitlesCardBases => {
     const [cueField] = fieldsCuePriority
     const cueTrackId = cueField && fieldsToTracks[cueField]
@@ -89,7 +92,8 @@ export const getSubtitlesCardBases = createSelector(
       currentFile!.durationSeconds,
       fieldsToTracks,
       subtitles,
-      fieldsCuePriority
+      fieldsCuePriority,
+      mergeThresholdMs
     )
 
     return {
@@ -124,7 +128,8 @@ function combineSubtitles(
   mediaDurationSeconds: number,
   fieldsToTracks: SubtitlesFlashcardFieldsLinks,
   subtitles: SubtitlesState,
-  fieldsCuePriority: TransliterationFlashcardFieldName[]
+  fieldsCuePriority: TransliterationFlashcardFieldName[],
+  mergeThresholdMs: number
 ) {
   const mediaDurationMs = Math.round(mediaDurationSeconds * 1000)
   type ChunkClip = PrimaryClip & { trackId: SubtitlesTrackId }
@@ -195,10 +200,11 @@ function combineSubtitles(
         return newItemIds.some((id) => {
           const { chunk: newItemChunk } = getChunkSpecs(id)
 
-          return overlapsSignificantly(
+          return overlapsSignificantlyWithThreshold(
             lastRegionChunk,
             newItemChunk.start,
-            newItemChunk.end
+            newItemChunk.end,
+            mergeThresholdMs
           )
         })
       })

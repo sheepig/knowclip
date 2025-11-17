@@ -1,9 +1,10 @@
 import { getSubtitlesCardBases, SubtitlesCardBase } from './cardPreview'
 import { getCurrentNoteType } from './currentMedia'
 import {
-  overlapsSignificantly,
+  overlapsSignificantlyWithThreshold,
   getSubtitlesFlashcardFieldLinks,
 } from './subtitles'
+import { getProjectSubtitlesMergeThresholdMs } from './project'
 import { TransliterationFlashcardFields } from '../types/Project'
 import {
   blankSimpleFields,
@@ -33,10 +34,11 @@ export const getNewFieldsFromLinkedSubtitles = (
 ): FlashcardFields => {
   const subs = getSubtitlesCardBases(state)
   const fieldsToTracks = getSubtitlesFlashcardFieldLinks(state)
+  const thresholdMs = getProjectSubtitlesMergeThresholdMs(state)
   const fields = { ...getBlankFields(state) } as TransliterationFlashcardFields
 
   for (const cardBase of subs.cards) {
-    if (overlapsSignificantly(cardBase, start, end)) {
+    if (overlapsSignificantlyWithThreshold(cardBase, start, end, thresholdMs)) {
       const tracksToFieldsText = cardBase
         ? subs.getFieldsPreviewFromCardsBase(cardBase)
         : null

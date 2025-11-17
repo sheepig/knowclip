@@ -33,6 +33,7 @@ declare type ProjectFile = {
   error: string | null
   lastSaved: string
   createdAt: string
+  subtitlesMergeThresholdMs?: number
 }
 declare type MediaFile = VideoFile | AudioFile
 

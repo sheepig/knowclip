@@ -17,6 +17,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux'
 import * as selectors from '../selectors'
 import { actions } from '../actions'
+import { FileUpdateName } from '../files/updates'
 import {
   IconButton,
   Icon,
@@ -29,6 +30,7 @@ import {
   Divider,
   MenuList,
   Popover,
+  TextField,
 } from '@mui/material'
 import { showOpenDialog } from '../mockable/electron'
 import css from './MainHeader.module.css'
@@ -40,13 +42,15 @@ import { AnyAction, Dispatch } from 'redux'
 const SubtitlesMenu = () => {
   const { anchorEl, anchorCallbackRef, open, close, isOpen } = usePopover()
 
-  const { subtitles, currentFileId, fieldNamesToTrackIds } = useSelector(
+  const { subtitles, currentFileId, fieldNamesToTrackIds, currentProjectId, projectThresholdMs } = useSelector(
     (state: AppState) => {
       const currentFileId = selectors.getCurrentFileId(state)
       return {
         subtitles: selectors.getSubtitlesFilesWithTracks(state),
         currentFileId,
         fieldNamesToTrackIds: selectors.getSubtitlesFlashcardFieldLinks(state),
+        currentProjectId: selectors.getCurrentProjectId(state),
+        projectThresholdMs: selectors.getProjectSubtitlesMergeThresholdMs(state),
       }
     }
   )
@@ -95,6 +99,31 @@ const SubtitlesMenu = () => {
     [dispatch, close]
   )
 
+  const [thresholdInput, setThresholdInput] = React.useState<number>(projectThresholdMs)
+  React.useEffect(() => setThresholdInput(projectThresholdMs), [projectThresholdMs])
+  const debounceRef = React.useRef<number | null>(null)
+  const onChangeThreshold = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const value = Number(e.target.value) || 0
+      setThresholdInput(value)
+      if (!currentProjectId) return
+      dispatch(
+        actions.updateFile({
+          fileType: 'ProjectFile',
+          id: currentProjectId,
+          updateName: FileUpdateName.SetSubtitlesMergeThresholdMs,
+          updatePayload: [value],
+        })
+      )
+
+      if (debounceRef.current) window.clearTimeout(debounceRef.current)
+      debounceRef.current = window.setTimeout(() => {
+        dispatch(actions.saveProjectRequest())
+      }, 3000)
+    },
+    [dispatch, currentProjectId]
+  )
+
   return (
     <Fragment>
       <Tooltip title="Subtitles">
@@ -114,6 +143,19 @@ const SubtitlesMenu = () => {
                 No subtitles loaded.
               </MenuItem>
             )}
+            <MenuItem dense disabled>
+              Subtitle Track Settings
+            </MenuItem>
+            <MenuItem dense>
+              <TextField
+                label="Merge adjacent gap (ms)"
+                type="number"
+                inputProps={{ min: 0, step: 50 }}
+                value={thresholdInput}
+                onChange={onChangeThreshold}
+                fullWidth
+              />
+            </MenuItem>
             {subtitles.embedded.map(
               ({ relation, sourceFile: file, track }, i) => (
                 <EmbeddedTrackMenuItem

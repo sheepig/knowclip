@@ -8,6 +8,7 @@ import {
 } from 'rxjs/operators'
 import { of, from, EMPTY } from 'rxjs'
 import { ofType, combineEpics } from 'redux-observable'
+import { debounceTime } from 'rxjs/operators'
 import A from '../types/ActionType'
 import r from '../redux'
 import { normalizeProjectJson } from '../utils/normalizeProjectJson'
@@ -188,6 +189,7 @@ const PROJECT_EDIT_UPDATE_FILE_ACTIONS: Set<FileUpdateName> = new Set([
   FileUpdateName.DeleteProjectMedia,
   FileUpdateName.LinkFlashcardFieldToSubtitlesTrack,
   FileUpdateName.SetProjectName,
+  FileUpdateName.SetSubtitlesMergeThresholdMs,
 ])
 
 const registerUnsavedWork: AppEpic = (action$, state$) =>
@@ -219,6 +221,18 @@ const deleteMediaFileFromProject: AppEpic = (action$, state$) =>
     })
   )
 
+const autoSaveOnThresholdChange: AppEpic = (action$) =>
+  action$.pipe(
+    ofType(A.updateFile as const),
+    filter(
+      (action) =>
+        action.type === A.updateFile &&
+        action.update.updateName === FileUpdateName.SetSubtitlesMergeThresholdMs
+    ),
+    debounceTime(3000),
+    map(() => r.saveProjectRequest())
+  )
+
 const closeProjectRequest: AppEpic = (action$, state$, effects) =>
   action$.pipe(
     ofType(A.closeProjectRequest as const),
@@ -247,5 +261,6 @@ export default combineEpics(
   registerUnsavedWork,
   // autoSaveProject,
   deleteMediaFileFromProject,
+  autoSaveOnThresholdChange,
   closeProjectRequest
 )

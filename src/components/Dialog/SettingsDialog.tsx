@@ -135,6 +135,8 @@ const SettingsDialog = ({ open }: DialogProps<SettingsDialogData>) => {
           </section>
         </section>
 
+        
+
         <section className={css.settingsGroup}>
           <Paper className={css.settingsGroupBody}>
             <h3 className={css.heading}>Software updates</h3>

@@ -1,6 +1,6 @@
 import moment from 'moment'
 import { createSelector } from 'reselect'
-import { getProjectMediaFiles } from './currentMedia'
+import { getProjectMediaFiles, getCurrentProject } from './currentMedia'
 import { getSubtitlesSourceFile } from './subtitles'
 import { getClipIdsByMediaFileId, getClip, getFlashcard } from './clips'
 import { formatDurationWithMilliseconds } from '../utils/formatTime'
@@ -65,6 +65,13 @@ export const getProjectIdByFilePath = (
       (state.fileAvailabilities.ProjectFile[id] as KnownFile).filePath ===
       filePath
   ) || null
+
+export const getProjectSubtitlesMergeThresholdMs = (
+  state: AppState
+): number => {
+  const project = getCurrentProject(state)
+  return (project && project.subtitlesMergeThresholdMs) || 500
+}
 
 export const getProjectJson = <F extends FlashcardFields>(
   state: AppState,
