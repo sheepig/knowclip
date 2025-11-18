@@ -21,10 +21,14 @@
           ],
           "type": "string"
         },
-        "timestamp": {
-          "type": "string"
-        }
-      },
+      "timestamp": {
+        "type": "string"
+      }
+      ,
+      "subtitlesMergeThresholdMs": {
+        "type": "number"
+      }
+    },
       "required": [
         "name",
         "id",

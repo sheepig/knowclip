@@ -6,6 +6,12 @@ export const initialState: SettingsState = {
   assetsDirectories: [],
   checkForUpdatesAutomatically: true,
   viewMode: 'VERTICAL',
+  youmitan2AnkiTemplate: {
+    templateName: 'Knowclip',
+    modelNames: 'Knowclip-Default',
+    templateParams: '{}',
+  },
+  youmitan2AnkiTemplateEnabled: false,
 }
 
 const settings: Reducer<SettingsState, Action> = (

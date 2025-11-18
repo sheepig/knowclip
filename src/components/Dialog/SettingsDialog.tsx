@@ -17,6 +17,7 @@ import {
   ListItemIcon,
   FormControlLabel,
   Checkbox,
+  TextField,
 } from '@mui/material'
 import { actions } from '../../actions'
 import * as selectors from '../../selectors'
@@ -55,6 +56,9 @@ const SettingsDialog = ({ open }: DialogProps<SettingsDialogData>) => {
   const close = useCallback(() => dispatch(actions.closeDialog()), [dispatch])
   const saveSettings = useCallback(() => {
     dispatch(actions.overrideSettings(settings))
+    // if (settings.youmitan2AnkiTemplateEnabled)
+    //   window.electronApi.invokeMessage({ type: 'startAnkiConnectShim', args: [] })
+    // else window.electronApi.invokeMessage({ type: 'stopAnkiConnectShim', args: [] })
     close()
   }, [close, dispatch, settings])
 
@@ -167,11 +171,11 @@ const SettingsDialog = ({ open }: DialogProps<SettingsDialogData>) => {
               network each time you open the app.
             </p>
           </section>
-        </section>
+      </section>
 
-        <section className={css.settingsGroup}>
-          <Paper className={css.settingsGroupBody}>
-            <h3 className={css.heading}>Pop-up dictionary</h3>
+      <section className={css.settingsGroup}>
+        <Paper className={css.settingsGroupBody}>
+          <h3 className={css.heading}>Pop-up dictionary</h3>
             <List>
               {!dictionaryFiles.length && (
                 <ListItem value={undefined}>
@@ -231,6 +235,86 @@ const SettingsDialog = ({ open }: DialogProps<SettingsDialogData>) => {
               of your choice, according to your needs.
             </p>
           </section>
+        </section>
+
+        <section className={css.settingsGroup}>
+          <Paper className={css.settingsGroupBody}>
+            <h3 className={css.heading}>Yomitan ↔︎ Custom created card</h3>
+            <FormControl className={css.formControl} fullWidth margin="normal">
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={Boolean(settings.youmitan2AnkiTemplateEnabled)}
+                    onChange={(e) =>
+                      {
+                        dispatchLocal(
+                          actions.overrideSettings({
+                            youmitan2AnkiTemplateEnabled: e.target.checked,
+                          })
+                        )
+                      }
+                    }
+                    color="primary"
+                  />
+                }
+                label="Receive dictionary data from Youmitan (Restart required)"
+              />
+            </FormControl>
+            <FormControl className={css.formControl} margin="normal" fullWidth>
+              <TextField
+                label="Template name"
+                type="text"
+                value={settings.youmitan2AnkiTemplate?.templateName || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  dispatchLocal(
+                    actions.overrideSettings({
+                      youmitan2AnkiTemplate: {
+                        ...settings.youmitan2AnkiTemplate,
+                        templateName: e.target.value,
+                      } as any,
+                    })
+                  )
+                }
+                helperText="Anki deckName"
+              />
+            </FormControl>
+            <FormControl className={css.formControl} margin="normal" fullWidth>
+              <TextField
+                label="Model names (comma-separated)"
+                type="text"
+                value={settings.youmitan2AnkiTemplate?.modelNames || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  dispatchLocal(
+                    actions.overrideSettings({
+                      youmitan2AnkiTemplate: {
+                        ...settings.youmitan2AnkiTemplate,
+                        modelNames: e.target.value,
+                      } as any,
+                    })
+                  )
+                }
+                helperText="Anki modelNames"
+              />
+            </FormControl>
+            <FormControl className={css.formControl} margin="normal" fullWidth>
+              <TextField
+                label="Template params (comma-separated)"
+                type="text"
+                value={settings.youmitan2AnkiTemplate?.templateParams || ''}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  dispatchLocal(
+                    actions.overrideSettings({
+                      youmitan2AnkiTemplate: {
+                        ...settings.youmitan2AnkiTemplate,
+                        templateParams: e.target.value,
+                      } as any,
+                    })
+                  )
+                }
+                helperText="The param key of you input model"
+              />
+            </FormControl>
+          </Paper>
         </section>
       </DialogContent>
 

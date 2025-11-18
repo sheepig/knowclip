@@ -29,6 +29,7 @@ export const normalizeProjectJson = <F extends FlashcardFields>(
     mediaFileIds: mediaJson.map((m) => m.id),
     type: 'ProjectFile',
     error: null,
+    subtitlesMergeThresholdMs: projectJson.subtitlesMergeThresholdMs,
   }
   const media: [MediaFile, () => Clip[], () => Flashcard[], SubtitlesFile[]][] =
     mediaJson.map((m) => {

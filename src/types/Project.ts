@@ -24,6 +24,7 @@ export type ProjectMetadataJson = {
   createdAt?: string
   noteType: NoteType
   timestamp: string
+  subtitlesMergeThresholdMs?: number
 }
 
 export type MediaJson<F extends FlashcardFields> =
@@ -82,6 +83,7 @@ export type ProjectJson<F extends FlashcardFields> = {
     timestamp: string
     createdAt: string
     id: string
+    subtitlesMergeThresholdMs?: number
   }
   media: MediaJson<F>[]
 }

@@ -8,6 +8,12 @@ declare type SettingsState = {
   checkForUpdatesAutomatically: boolean
   viewMode: ViewMode
   activeDictionaries?: { id: FileId; type: DictionaryFileType }[]
+  youmitan2AnkiTemplate?: {
+    templateName: string
+    modelNames: string
+    templateParams: string
+  }
+  youmitan2AnkiTemplateEnabled?: boolean
 }
 
 declare type ViewMode = 'HORIZONTAL' | 'VERTICAL'

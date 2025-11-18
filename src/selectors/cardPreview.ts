@@ -133,19 +133,20 @@ function combineSubtitles(
 ) {
   const mediaDurationMs = Math.round(mediaDurationSeconds * 1000)
   type ChunkClip = PrimaryClip & { trackId: SubtitlesTrackId }
-  const tracksAsClips: ChunkClip[] = Object.values(fieldsToTracks)
-    .filter((trackId) => trackId && subtitles[trackId])
-    .flatMap((trackId) => {
-      const track = subtitles[trackId]
-      return track.chunks.map((chunk, i) => ({
-        clipwaveType: 'Primary' as const,
-        id: subBaseClipId(trackId, i),
-        start: chunk.start,
-        end: chunk.end,
-        trackId,
-      }))
-    })
-    .sort((a, b) => a.start - b.start)
+  const baseTrackId = fieldsToTracks[fieldsCuePriority[0]!] as
+    | SubtitlesTrackId
+    | undefined
+  const tracksAsClips: ChunkClip[] = baseTrackId
+    ? subtitles[baseTrackId].chunks
+        .map((chunk, i) => ({
+          clipwaveType: 'Primary' as const,
+          id: subBaseClipId(baseTrackId, i),
+          start: chunk.start,
+          end: chunk.end,
+          trackId: baseTrackId,
+        }))
+        .sort((a, b) => a.start - b.start)
+    : []
 
   const getChunkSpecs = (id: string) => {
     const [trackId, chunkIndexString] = id.split(DELIMITER)
@@ -189,25 +190,28 @@ function combineSubtitles(
     const newItemIds = region.itemIds.filter((id) => {
       return !lastCardItemIds.includes(id)
     })
-    const itemsAlsoInLastCard = lastCardItemIds.filter((id) =>
-      region.itemIds.includes(id)
-    )
+    const lastBaseTrackChunkEnd = (() => {
+      if (!lastCard) return null
+      const indices = lastCard.fields[baseTrackId || ''] || []
+      if (!indices.length) return null
+      const lastIndex = indices[indices.length - 1]
+      const chunk = baseTrackId ? subtitles[baseTrackId].chunks[lastIndex] : null
+      return chunk ? chunk.end : null
+    })()
+
+    const earliestNewChunkStart = newItemIds.length
+      ? Math.min(
+          ...newItemIds.map((id) => {
+            const { chunk } = getChunkSpecs(id)
+            return chunk.start
+          })
+        )
+      : null
 
     const continuingLastCard =
-      itemsAlsoInLastCard.length &&
-      itemsAlsoInLastCard.some((idFromItemInLastCard) => {
-        const { chunk: lastRegionChunk } = getChunkSpecs(idFromItemInLastCard)
-        return newItemIds.some((id) => {
-          const { chunk: newItemChunk } = getChunkSpecs(id)
-
-          return overlapsSignificantlyWithThreshold(
-            lastRegionChunk,
-            newItemChunk.start,
-            newItemChunk.end,
-            mergeThresholdMs
-          )
-        })
-      })
+      lastBaseTrackChunkEnd != null &&
+      earliestNewChunkStart != null &&
+      earliestNewChunkStart <= lastBaseTrackChunkEnd + mergeThresholdMs
 
     if (continuingLastCard) {
       newItemIds.forEach((itemId) => {
@@ -229,6 +233,18 @@ function combineSubtitles(
           regionsFromClips,
           regionIndex
         )
+      // populate other linked tracks' fields by overlap within the card time range
+      Object.values(fieldsToTracks)
+        .filter((tid) => tid && tid !== baseTrackId && Boolean(subtitles[tid!]))
+        .forEach((tid) => {
+          const track = subtitles[tid!]
+          track.chunks.forEach((chunk, idx) => {
+            if (chunk.start < newCard.end && chunk.end > newCard.start) {
+              newCard.fields[tid!] = newCard.fields[tid!] || []
+              newCard.fields[tid!]!.push(idx)
+            }
+          })
+        })
       cardsMap[id] = newCard
       cards.push(newCard)
     }

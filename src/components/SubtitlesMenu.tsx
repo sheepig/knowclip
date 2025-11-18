@@ -150,7 +150,7 @@ const SubtitlesMenu = () => {
               <TextField
                 label="Merge adjacent gap (ms)"
                 type="number"
-                inputProps={{ min: 0, step: 50 }}
+                inputProps={{ min: 0, step: 20 }}
                 value={thresholdInput}
                 onChange={onChangeThreshold}
                 fullWidth

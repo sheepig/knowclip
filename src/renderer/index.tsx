@@ -23,6 +23,7 @@ window.electronApi.listenToIpcRendererMessages(
   }
 )
 
+
 const sentryDsn = 'https://bbdc0ddd503c41eea9ad656b5481202c@sentry.io/1881735'
 const RESIZE_OBSERVER_ERROR_MESSAGE = 'ResizeObserver loop limit exceeded'
 Sentry.init(
@@ -103,6 +104,22 @@ async function render() {
       : undefined
   )
   const root = createRoot(document.getElementById('root')!)
+
+  // if (Boolean(store.getState().settings?.youmitan2AnkiTemplateEnabled)) {
+  //   window.electronApi.invokeMessage({ type: 'startAnkiConnectShim', args: [] })
+  // }
+
+  window.addEventListener('ipc:anki-add-note', (e: Event) => {
+    try {
+      const payload = (e as any).payload as string
+      const data = JSON.parse(payload)
+      const message = data?.note
+        ? '收到 Yomitan 添加卡片请求'
+        : '收到 Yomitan 批量添加卡片请求'
+      const { compositeSnackbarActions } = require('../actions')
+      store.dispatch(compositeSnackbarActions.simpleMessageSnackbar(message, 3000))
+    } catch {}
+  })
 
   root.render(
     <React.StrictMode>

@@ -88,6 +88,9 @@ export const getProjectJson = <F extends FlashcardFields>(
       createdAt: file.createdAt,
       timestamp,
       id: file.id,
+      ...(typeof file.subtitlesMergeThresholdMs === 'number'
+        ? { subtitlesMergeThresholdMs: file.subtitlesMergeThresholdMs }
+        : {}),
     },
 
     media: mediaFiles.map((mediaFile): MediaJson<F> => {

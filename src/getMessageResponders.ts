@@ -29,6 +29,8 @@ import { getWaveformPng, getWaveformPngs } from './node/getWaveform'
 import { readdir } from 'fs-extra'
 import { parseProjectJson } from './node/parseProject'
 import { getWriteApkgDeck } from './node/writeToApkg'
+// import { startAnkiConnectShim } from '../electron/ankiConnectShim'
+// import { stopAnkiConnectShim } from '../electron/ankiConnectShim'
 
 export type MessageResponders = ReturnType<typeof getMessageResponders>
 
@@ -200,6 +202,9 @@ export const getMessageResponders = (
   readdir: (path: string) => readdir(path),
   readMediaFile,
   parseProjectJson,
+  // /** Yomitan ↔︎ AnkiConnect shim */
+  // startAnkiConnectShim: () => startAnkiConnectShim(mainWindow),
+  // stopAnkiConnectShim: () => stopAnkiConnectShim(),
 })
 
 export type AppState = any

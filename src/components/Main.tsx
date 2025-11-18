@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CircularProgress } from '@mui/material'
+import { CircularProgress, Tooltip, IconButton } from '@mui/material'
 import { useNavigate, useParams } from 'react-router-dom'
 import cn from 'clsx'
 import Media from '../components/Media'
@@ -18,6 +18,7 @@ import FlashcardSection from '../components/FlashcardSection'
 import Header from '../components/MainHeader'
 import KeyboardShortcuts from '../components/KeyboardShortcuts'
 import DarkTheme from '../components/DarkTheme'
+import { HelpOutline } from '@mui/icons-material'
 import css from '../components/Main.module.css'
 import waveformCss from '../components/Waveform.module.css'
 import * as r from '../selectors'
@@ -295,22 +296,31 @@ const Main = () => {
       </section>
 
       {currentMediaFile && !mediaIsEffectivelyLoading ? (
-        <Waveform
-          waveform={waveform}
-          playerRef={playerRef}
-          key={currentMediaFile.id}
-          images={waveformImagesWithUrls}
-          onWaveformDrag={handleWaveformDrag}
-          onClipDrag={handleClipDrag}
-          onClipEdgeDrag={handleClipEdgeDrag}
-          renderPrimaryClip={renderPrimaryClip}
-          renderSecondaryClip={renderSecondaryClip}
-          height={
-            WAVEFORM_HEIGHT +
-            subsBases.linkedTrackIds.length * SUBTITLES_CHUNK_HEIGHT
-          }
-          style={{ background: 'gray', alignSelf: 'flex-start', width: '100%' }}
-        />
+        <div style={{ position: 'relative', width: '100%' }}>
+          <Waveform
+            waveform={waveform}
+            playerRef={playerRef}
+            key={currentMediaFile.id}
+            images={waveformImagesWithUrls}
+            onWaveformDrag={handleWaveformDrag}
+            onClipDrag={handleClipDrag}
+            onClipEdgeDrag={handleClipEdgeDrag}
+            renderPrimaryClip={renderPrimaryClip}
+            renderSecondaryClip={renderSecondaryClip}
+            height={
+              WAVEFORM_HEIGHT +
+              subsBases.linkedTrackIds.length * SUBTITLES_CHUNK_HEIGHT
+            }
+            style={{ background: 'gray', alignSelf: 'flex-start', width: '100%' }}
+          />
+          <div style={{ position: 'absolute', top: 6, right: 6 }}>
+            <Tooltip title="字幕句子划分以绑定到 transcription 的字幕轨为准；当相邻句子的间隔小于项目设置的 merge adjacent gap 时，划分为同一句。" placement="left">
+              <IconButton size="small" aria-label="Subtitles segmentation info">
+                <HelpOutline fontSize="small" />
+              </IconButton>
+            </Tooltip>
+          </div>
+        </div>
       ) : (
         <div
           className={cn(waveformCss.waveformPlaceholder, waveform$.placeholder)}
