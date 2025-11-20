@@ -1,6 +1,6 @@
 import React, { MouseEventHandler, useCallback, useMemo, useState } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { IconButton, Tooltip } from '@mui/material'
+import { IconButton, Tooltip, Drawer, Box } from '@mui/material'
 import cn from 'clsx'
 import r from '../redux'
 import css from './FlashcardSection.module.css'
@@ -108,17 +108,7 @@ const FlashcardSection = ({
         </IconButton>
       </Tooltip>
 
-      {highlightedClip && mediaFile && editing && flashcard && (
-        <FlashcardForm
-          key={highlightedClip.id}
-          className={cn(css.form, css.flashcardSectionContents)}
-          mediaFile={mediaFile}
-          flashcard={flashcard}
-          clipId={highlightedClip.id}
-          mediaIsPlaying={mediaIsPlaying}
-          autofocusFieldName={autofocusFieldName}
-        />
-      )}
+      {/* Flashcard form is rendered as an overlay inside Media component now */}
       {highlightedClip && mediaFile && flashcard && !editing && (
         <FlashcardDisplay
           mediaFile={mediaFile}

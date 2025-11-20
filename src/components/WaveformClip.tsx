@@ -9,6 +9,9 @@ import {
 import cn from 'clsx'
 import { waveform$ } from './waveformTestLabels'
 import { ClipClickDataProps } from 'clipwave/dist/WaveformClips'
+import { useDispatch, useSelector } from 'react-redux'
+import * as r from '../selectors'
+import { actions } from '../actions'
 
 export function useWaveformRenderClip() {
   return useCallback(
@@ -54,8 +57,15 @@ function WaveformClip({
 }) {
   const { id, start, end } = clip
   const y = level * 10
+  const dispatch = useDispatch()
+  const hasFlashcard = useSelector((state: AppState) => Boolean(r.getFlashcard(state, id)))
+  const handleDoubleClick = useCallback(() => {
+    if (!hasFlashcard) return
+    dispatch(actions.selectWaveformItem({ type: 'Clip', id }))
+    dispatch(actions.startEditingCards())
+  }, [dispatch, hasFlashcard, id])
   return (
-    <g id={id} {...clickDataProps} className={waveform$.waveformClip}>
+    <g id={id} {...clickDataProps} className={waveform$.waveformClip} onDoubleClick={handleDoubleClick}>
       <rect
         className={cn(css.waveformClip, {
           [css.highlightedClip]: isHighlighted,

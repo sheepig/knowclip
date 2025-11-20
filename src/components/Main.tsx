@@ -14,7 +14,7 @@ import {
   WAVEFORM_HEIGHT,
   SUBTITLES_CHUNK_HEIGHT,
 } from 'clipwave'
-import FlashcardSection from '../components/FlashcardSection'
+// import FlashcardSection from '../components/FlashcardSection'
 import Header from '../components/MainHeader'
 import KeyboardShortcuts from '../components/KeyboardShortcuts'
 import DarkTheme from '../components/DarkTheme'
@@ -33,6 +33,7 @@ import { useWaveformRenderClip } from './WaveformClip'
 import { getFreshRegions } from '../epics/getFreshRegions'
 import { isWaveformItemSelectable } from '../utils/clipwave/isWaveformItemSelectable'
 import { useWaveformEventHandlers } from '../utils/clipwave/useWaveformEventHandlers'
+import WaveformOperationsBar from './WaveformOperationsBar'
 
 import { main$ as $ } from './Main.testLabels'
 import { CLIPWAVE_ID } from '../utils/clipwave'
@@ -283,7 +284,7 @@ const Main = () => {
           />
         )}
 
-        {currentProject && (
+        {/* {currentProject && (
           <FlashcardSection
             mediaFile={currentMediaFile}
             className={css.flashcardSection}
@@ -292,9 +293,9 @@ const Main = () => {
             selectNext={selectNextCard}
             mediaIsPlaying={mediaIsPlaying}
           />
-        )}
+        )} */}
       </section>
-
+      <WaveformOperationsBar waveform={waveform} playerRef={playerRef as any} />
       {currentMediaFile && !mediaIsEffectivelyLoading ? (
         <div style={{ position: 'relative', width: '100%' }}>
           <Waveform
@@ -316,7 +317,7 @@ const Main = () => {
           <div style={{ position: 'absolute', top: 6, right: 6 }}>
             <Tooltip title="字幕句子划分以绑定到 transcription 的字幕轨为准；当相邻句子的间隔小于项目设置的 merge adjacent gap 时，划分为同一句。" placement="left">
               <IconButton size="small" aria-label="Subtitles segmentation info">
-                <HelpOutline fontSize="small" />
+                <HelpOutline fontSize="small" style={{ color: '#fff' }} />
               </IconButton>
             </Tooltip>
           </div>

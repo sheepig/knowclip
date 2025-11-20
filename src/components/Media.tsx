@@ -14,6 +14,8 @@ import { Tooltip, IconButton } from '@mui/material'
 import { VerticalSplitSharp, HorizontalSplitSharp } from '@mui/icons-material'
 import { KEYS } from '../utils/keyboard'
 import { MediaSubtitles, SubtitlesFileWithTrack } from '../selectors'
+import * as selectors from '../selectors'
+import FlashcardSectionForm from './FlashcardSectionForm'
 
 export const MEDIA_PLAYER_ID = 'mediaPlayer'
 
@@ -195,6 +197,9 @@ const Media = ({
           className={cn(css.audio, css.mediaPlayer)}
         />
       )}
+
+      <SubtitleOverlay />
+      <EditorOverlay metadata={metadata} playerRef={playerRef} />
     </section>
   )
 }
@@ -287,3 +292,72 @@ const Subtitles = ({
   )
 }
 export default Media
+
+const SubtitleOverlay = () => {
+  const { selection, subsBases, fieldsToTracks, flashcard } = useSelector(
+    (state: AppState) => ({
+      selection: selectors.getSelectionItem(state),
+      subsBases: selectors.getSubtitlesCardBases(state),
+      fieldsToTracks: selectors.getSubtitlesFlashcardFieldLinks(state),
+      flashcard: selectors.getHighlightedFlashcard(state),
+    })
+  )
+
+  let transcription = ''
+  let meaning = ''
+
+  if (selection && selection.clipwaveType === 'Secondary') {
+    const preview = subsBases.getFieldsPreviewFromCardsBase(selection)
+    const tId = fieldsToTracks['transcription']
+    const mId = fieldsToTracks['meaning']
+    transcription = (tId && preview[tId]) || ''
+    meaning = (mId && preview[mId]) || ''
+  } else if (flashcard) {
+    transcription = (flashcard.fields as any).transcription || ''
+    meaning = (flashcard.fields as any).meaning || ''
+  }
+
+  const show = Boolean(transcription || meaning)
+  if (!show) return null
+
+  return (
+    <div className={css.subtitleOverlay}>
+      {transcription && (
+        <div className={css.subtitleLinePrimary}>{transcription}</div>
+      )}
+      {meaning && <div className={css.subtitleLineSecondary}>{meaning}</div>}
+    </div>
+  )
+}
+
+const EditorOverlay = ({
+  metadata,
+  playerRef,
+}: {
+  metadata: MediaFile | null
+  playerRef: React.MutableRefObject<HTMLAudioElement | HTMLVideoElement | null>
+}) => {
+  const { editing, flashcard } = useSelector((state: AppState) => ({
+    editing: state.session.editingCards,
+    flashcard: selectors.getHighlightedFlashcard(state),
+  }))
+
+  if (!metadata || !editing || !flashcard) return null
+
+  const mediaIsPlaying = Boolean(playerRef.current && !playerRef.current.paused)
+
+  return (
+    <div className={css.editorOverlay}>
+      <div className={css.editorOverlayInner}>
+        <FlashcardSectionForm
+          className={cn(css.form)}
+          mediaFile={metadata}
+          flashcard={flashcard}
+          clipId={flashcard.id}
+          mediaIsPlaying={mediaIsPlaying}
+          autofocusFieldName={'transcription'}
+        />
+      </div>
+    </div>
+  )
+}

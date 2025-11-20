@@ -3,7 +3,7 @@ import cn from 'clsx'
 import r from '../redux'
 import css from './FlashcardSectionDisplay.module.css'
 import { TransliterationFlashcardFields } from '../types/Project'
-import { Tooltip, IconButton } from '@mui/material'
+import { Tooltip, IconButton, Drawer, Box } from '@mui/material'
 import { LibraryAdd, Photo, Loop } from '@mui/icons-material'
 import { useDispatch, useSelector } from 'react-redux'
 import FlashcardSectionDisplay from './FlashcardSectionDisplay'
@@ -28,6 +28,7 @@ const FlashcardSectionPreview = ({
   viewMode: ViewMode
   className: string
 }) => {
+  const [open, setOpen] = React.useState(false)
   const tracksToFieldsText = cardBases.getFieldsPreviewFromCardsBase(cardBase)
   const fields = {} as TransliterationFlashcardFields
   for (const fieldName of cardBases.fieldNames) {
@@ -38,8 +39,8 @@ const FlashcardSectionPreview = ({
 
   const dispatch = useDispatch()
   const startEditing = useCallback(() => {
-    dispatch(r.startEditingCards())
-  }, [dispatch])
+    setOpen(true)
+  }, [])
 
   const clozeControls = useClozeControls({
     onNewClozeCard: useCallback(
@@ -58,10 +59,15 @@ const FlashcardSectionPreview = ({
     ),
   })
 
-  const { defaultIncludeStill, isLoopOn } = useSelector((state: AppState) => ({
+  const { defaultIncludeStill, isLoopOn, editing } = useSelector((state: AppState) => ({
     defaultIncludeStill: r.getDefaultIncludeStill(state),
     isLoopOn: r.getLoopState(state),
+    editing: state.session.editingCards,
   }))
+
+  React.useEffect(() => {
+    if (editing) setOpen(false)
+  }, [editing])
 
   const toggleIncludeStill = useCallback(() => {
     dispatch(r.setDefaultClipSpecs({ includeStill: !defaultIncludeStill }))
@@ -71,63 +77,72 @@ const FlashcardSectionPreview = ({
     [dispatch]
   )
   return (
-    <FlashcardSectionDisplay
-      className={cn(className, css.preview)}
-      mediaFile={mediaFile}
-      fieldsToTracks={fieldsToTracks}
-      fields={fields}
-      viewMode={viewMode}
-      clozeControls={clozeControls}
-      menuItems={
-        <>
-          {(fields.transcription || '').trim() && (
-            <ClozeButtons controls={clozeControls} />
-          )}
-          <Tooltip
-            title={`Create flashcard and start editing (${getKeyboardShortcut(
-              'Start editing fields'
-            )} key)`}
-          >
-            <IconButton className={css.editCardButton} onClick={startEditing}>
-              <LibraryAdd />
-            </IconButton>
-          </Tooltip>
-        </>
-      }
-      secondaryMenuItems={
-        <>
-          <Tooltip
-            title={`Loop selection (${getKeyboardShortcut('Toggle loop')})`}
-          >
-            <IconButton
-              onClick={toggleLoop}
-              color={isLoopOn ? 'secondary' : 'default'}
-            >
-              <Loop />
-            </IconButton>
-          </Tooltip>
-          {mediaFile.isVideo && (
-            <Tooltip
-              title={
-                defaultIncludeStill
-                  ? 'Click to leave out image by default when creating a card'
-                  : 'Click to include image by default when creating a card'
-              }
-            >
-              <IconButton
-                className={css.editCardButton}
-                onClick={toggleIncludeStill}
-                style={{
-                  color: defaultIncludeStill ? 'rgba(0, 0, 0, 0.54)' : '#ddd',
-                }}
-              >
-                <Photo />
-              </IconButton>
-            </Tooltip>
-          )}
-        </>
-      }
-    />
+    <>
+      <Tooltip
+        title={`Create flashcard and start editing (${getKeyboardShortcut(
+          'Start editing fields'
+        )} key)`}
+      >
+        <IconButton className={css.editCardButton} onClick={startEditing}>
+          <LibraryAdd />
+        </IconButton>
+      </Tooltip>
+
+      <Drawer anchor="left" open={open} onClose={() => setOpen(false)}>
+        <Box sx={{ width: 360, padding: 2 }}>
+          <FlashcardSectionDisplay
+            className={cn(className)}
+            mediaFile={mediaFile}
+            fieldsToTracks={fieldsToTracks}
+            fields={fields}
+            viewMode={viewMode}
+            clozeControls={clozeControls}
+            menuItems={
+              <>
+                {(fields.transcription || '').trim() && (
+                  <ClozeButtons controls={clozeControls} />
+                )}
+              </>
+            }
+            secondaryMenuItems={
+              <>
+                <Tooltip
+                  title={`Loop selection (${getKeyboardShortcut('Toggle loop')})`}
+                >
+                  <IconButton
+                    onClick={toggleLoop}
+                    color={isLoopOn ? 'secondary' : 'default'}
+                  >
+                    <Loop />
+                  </IconButton>
+                </Tooltip>
+                {mediaFile.isVideo && (
+                  <Tooltip
+                    title={
+                      defaultIncludeStill
+                        ? 'Click to leave out image by default when creating a card'
+                        : 'Click to include image by default when creating a card'
+                    }
+                  >
+                    <IconButton
+                      className={css.editCardButton}
+                      onClick={toggleIncludeStill}
+                      style={{
+                        color: defaultIncludeStill
+                          ? 'rgba(0, 0, 0, 0.54)'
+                          : '#bbb',
+                      }}
+                    >
+                      <Photo />
+                    </IconButton>
+                  </Tooltip>
+                )}
+              </>
+            }
+          />
+        </Box>
+      </Drawer>
+    </>
   )
 }
 
