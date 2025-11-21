@@ -11,6 +11,9 @@ import { init as reactInit } from '@sentry/react'
 import ErrorMessage from '../components/ErrorMessage'
 import { PersistGate } from 'redux-persist/integration/react'
 import { IpcRendererEvent } from '../preload/IpcRendererEvent'
+import { actions } from '../actions'
+import { compositeSnackbarActions } from '../actions/snackbar'
+import { getHighlightedFlashcard } from '../selectors/session'
 
 window.electronApi.listenToIpcRendererMessages(
   (electronIpcRendererEvent, message, payload) => {
@@ -113,11 +116,54 @@ async function render() {
     try {
       const payload = (e as any).payload as string
       const data = JSON.parse(payload)
-      const message = data?.note
-        ? '收到 Yomitan 添加卡片请求'
-        : '收到 Yomitan 批量添加卡片请求'
-      const { compositeSnackbarActions } = require('../actions')
-      store.dispatch(compositeSnackbarActions.simpleMessageSnackbar(message, 3000))
+      console.log('ipc:anki-add-note data', data)
+      const configuredFields: string[] = Array.isArray(data?.configuredFields)
+        ? data.configuredFields
+        : []
+      const fieldsObj = (data?.note?.fields && typeof data.note.fields === 'object')
+        ? data.note.fields
+        : {}
+
+      const state = store.getState()
+      const editing = state.session.editingCards
+      const flashcard = getHighlightedFlashcard(state)
+      
+      console.log('flashcard', flashcard)
+      if (editing && flashcard) {
+        const keys = Array.from(new Set([...Object.keys(fieldsObj), ...configuredFields]))
+        keys.forEach((k: string) => {
+          const v = fieldsObj?.[k]
+          if (typeof v === 'undefined') return
+          const newValue = String(v)
+          if (newValue.trim().length === 0) return
+          store.dispatch(actions.setFlashcardField(flashcard.id, k, newValue, 0))
+        })
+        store.dispatch(
+          compositeSnackbarActions.simpleMessageSnackbar(
+            `Mapped ${keys.length} fields into current card.`,
+            2500
+          )
+        )
+      } else {
+        // store for preview to read
+        store.dispatch(actions.setYomitanPreviewFields(fieldsObj))
+        store.dispatch(compositeSnackbarActions.simpleMessageSnackbar('Received Yomitan add-card, but no card is being edited.', 3000))
+      }
+    } catch {}
+  })
+
+  window.addEventListener('ipc:anki-store-media', (e: Event) => {
+    try {
+      const payload = (e as any).payload as string
+      const data = JSON.parse(payload)
+      const sound = String(data?.sound || '')
+      const state = store.getState()
+      const editing = state.session.editingCards
+      const flashcard = getHighlightedFlashcard(state)
+      if (editing && flashcard && sound) {
+        store.dispatch(actions.setFlashcardField(flashcard.id, 'audio', sound, 0))
+        store.dispatch(compositeSnackbarActions.simpleMessageSnackbar('Audio attached to current card.', 2000))
+      }
     } catch {}
   })
 

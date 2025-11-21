@@ -253,8 +253,8 @@ const clips: Reducer<ClipsState, Action> = (state = initialState, action) => {
         [id]: {
           ...card,
           fields: {
-            ...(card.fields as TransliterationFlashcardFields),
-            [key as TransliterationFlashcardFieldName]: value,
+            ...(card.fields as any),
+            [key]: value,
           },
           cloze,
         },

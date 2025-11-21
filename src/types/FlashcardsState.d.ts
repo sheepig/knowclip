@@ -2,8 +2,10 @@ declare type FlashcardsState = Record<ClipId, Flashcard>
 
 declare interface FlashcardFields {
   transcription: string
+  pronunciation?: string
   meaning: string
   notes: string
+  [key: string]: string | undefined
 }
 
 declare type FlashcardFieldName =

@@ -23,14 +23,7 @@ const MediaFolderLocationForm = ({ onSubmit }: { onSubmit: () => void }) => {
     [setJustLocationText, setErrorText]
   )
 
-  const onLocationTextFocus = useCallback(async () => {
-    const filePaths = await showOpenDirectoryDialog()
-
-    if (!filePaths) return
-
-    const [directory] = filePaths
-    setLocationText(directory)
-  }, [setLocationText])
+  const onLocationTextFocus = useCallback(async () => {}, [])
 
   const handleSubmit = useCallback(() => {
     if (locationText) {
@@ -57,8 +50,8 @@ const MediaFolderLocationForm = ({ onSubmit }: { onSubmit: () => void }) => {
         <TextField
           className={css.textField}
           value={locationText}
-          onClick={onLocationTextFocus}
-          onKeyPress={onLocationTextFocus}
+          onChange={(e) => setLocationText(e.target.value)}
+          placeholder={'/Users/you/Library/Application Support/Anki2/User 1/collection.media'}
           error={Boolean(errorText)}
           helperText={errorText}
         />

@@ -181,6 +181,8 @@
 
 .field {
   position: relative;
+  max-height: 6.2em;
+  overflow: auto;
 }
 
 .fieldMenuButton {

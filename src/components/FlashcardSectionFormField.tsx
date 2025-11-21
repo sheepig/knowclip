@@ -115,7 +115,14 @@ const FlashcardSectionFormField = memo(
         <TextField
           autoFocus={autoFocus}
           className={flashcardSectionForm$.flashcardFields}
-          inputProps={inputProps}
+          inputProps={{
+            ...inputProps,
+            style: {
+              ...(inputProps?.style || {}),
+              maxHeight: '4.5em',
+              overflow: 'auto',
+            },
+          }}
           onChange={handleChange}
           onKeyPress={onKeyPress}
           onFocus={onFocus}
@@ -124,6 +131,7 @@ const FlashcardSectionFormField = memo(
           value={text}
           fullWidth
           multiline
+          maxRows={3}
           margin="dense"
           label={label}
         />

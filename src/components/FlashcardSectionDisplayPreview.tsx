@@ -37,6 +37,11 @@ const FlashcardSectionPreview = ({
     fields[fieldName] = text || ''
   }
 
+  const yomitanPreviewFields = useSelector(
+    (state: AppState) => state.session.yomitanPreviewFields || {}
+  )
+  const mergedFields = { ...(fields as any), ...yomitanPreviewFields }
+
   const dispatch = useDispatch()
   const startEditing = useCallback(() => {
     setOpen(true)
@@ -94,7 +99,7 @@ const FlashcardSectionPreview = ({
             className={cn(className)}
             mediaFile={mediaFile}
             fieldsToTracks={fieldsToTracks}
-            fields={fields}
+            fields={mergedFields as any}
             viewMode={viewMode}
             clozeControls={clozeControls}
             menuItems={

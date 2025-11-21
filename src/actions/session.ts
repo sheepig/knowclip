@@ -18,4 +18,9 @@ export const sessionActions = {
     type: A.setViewMode,
     viewMode,
   }),
+
+  setYomitanPreviewFields: (fields: Record<string, string>) => ({
+    type: A.setYomitanPreviewFields,
+    fields,
+  }),
 } satisfies KnowclipActionCreatorsSubset

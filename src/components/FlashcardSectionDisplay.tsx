@@ -1,6 +1,8 @@
 import React, { ReactChild } from 'react'
 import cn from 'clsx'
 import css from './FlashcardSectionDisplay.module.css'
+import { useSelector } from 'react-redux'
+import { getYomitan2AnkiTemplate } from '../selectors/settings'
 import { TransliterationFlashcardFields } from '../types/Project'
 import FlashcardDisplayField from './FlashcardSectionDisplayField'
 import { ClozeControls } from '../utils/clozeField/useClozeControls'
@@ -36,6 +38,18 @@ const FlashcardSectionDisplay = ({
     deletions: clozeDeletions = empty,
     inputRef: fieldValueRef,
   } = clozeControls || {}
+
+  const tmpl = useSelector((state: AppState) => getYomitan2AnkiTemplate(state))
+  const tmplKeys = (tmpl?.templateParams || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const TMPL_MARKER = 'TEMPLATE_PARAMS_JSON:'
+  const tmplObj = (() => {
+    const v: Record<string, string> = {}
+    tmplKeys.forEach((k) => (v[k] = String((fields as any)[k] || '')))
+    return v
+  })()
 
   return (
     <section
@@ -114,6 +128,15 @@ const FlashcardSectionDisplay = ({
             {fields.notes}
           </FlashcardDisplayField>
         )}
+        {tmplKeys.length ? (
+          <div>
+            {tmplKeys.map((k) => (
+              <div key={k}>
+                {k}: {String((tmplObj as any)[k] || '')}
+              </div>
+            ))}
+          </div>
+        ) : null}
       </section>
 
       <section className={css.menu}>{menuItems}</section>

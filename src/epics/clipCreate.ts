@@ -39,7 +39,7 @@ const clipCreateEpic: AppEpic = (action$, state$, effects) =>
         r.addClip(
           clip,
           flashcard,
-          !Object.values(fields).some((fieldValue) => fieldValue.trim())
+          !Object.values(fields).some((fieldValue) => String(fieldValue || '').trim())
         )
       )
     })

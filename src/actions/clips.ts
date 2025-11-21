@@ -104,7 +104,7 @@ export const clipsActions = {
 
   setFlashcardField: (
     id: ClipId,
-    key: FlashcardFieldName,
+    key: string,
     value: string,
     caretLocation: number
   ) => ({

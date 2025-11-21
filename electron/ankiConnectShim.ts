@@ -161,22 +161,11 @@ export async function startAnkiConnectShim(mainWindow: BrowserWindow) {
       case 'canAddNotesWithErrorDetail': {
         try {
           const notes = Array.isArray(p.notes) ? p.notes : []
-          const { modelNames, templateParams } = readSettings()
-          const tmplParams = templateParams
-          const configuredFields = tmplParams
-            ? tmplParams.split(',').map((s: string) => s.trim()).filter(Boolean)
-            : []
+          const { modelNames } = readSettings()
           const results = notes.map((note: any) => {
             const modelName = (note?.modelName || '').trim()
-            if (!modelName) return { canAdd: false, error: 'model was not found: ' }
-            if (modelNames && modelName !== modelNames) return { canAdd: false, error: 'model was not found: ' }
-            const fieldsObj = (note?.fields && typeof note.fields === 'object') ? note.fields : {}
-            const keys = configuredFields.length ? configuredFields : Object.keys(fieldsObj)
-            const hasContent = keys.some((k: string) => {
-              const v = (fieldsObj?.[k] ?? '')
-              return typeof v === 'string' ? v.trim().length > 0 : Boolean(v)
-            })
-            if (!hasContent) return { canAdd: false, error: 'cannot create note because it is empty' }
+            if (modelNames && modelName && modelName !== modelNames)
+              return { canAdd: false, error: 'model was not found: ' }
             return { canAdd: true, error: null }
           })
           ctx.body = isV6 ? ok(results) : results
@@ -190,24 +179,37 @@ export async function startAnkiConnectShim(mainWindow: BrowserWindow) {
         try {
           const filename = String(p.filename || '').trim()
           const dataStr = String(p.data || '')
-          const ext = extname(filename).toLowerCase()
-          const audioExts = new Set(['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac'])
-          if (!filename || !audioExts.has(ext)) {
-            ctx.body = ok(filename)
+          if (!filename) {
+            ctx.body = err('filename missing')
             break
           }
+          const ext = extname(filename).toLowerCase()
+          const audioExts = new Set(['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac'])
+          const imageExts = new Set(['.png', '.jpg', '.jpeg', '.gif', '.webp'])
+          const isSupported = audioExts.has(ext) || imageExts.has(ext)
+          if (!isSupported) {
+            // Still accept and store unknown extensions
+          }
+
           const { mediaFolderLocation } = readSettings()
           if (!mediaFolderLocation) {
             ctx.body = err('media folder not configured')
             break
           }
-          const outPath = join(mediaFolderLocation, filename)
+          const safeName = filename.replace(/\\/g, '/').split('/').pop() || filename
+          const outPath = join(mediaFolderLocation, safeName)
           const isDataUrl = dataStr.startsWith('data:')
           const base64Payload = isDataUrl ? dataStr.split(',')[1] || '' : dataStr
           const buf = Buffer.from(base64Payload, 'base64')
           await mkdir(mediaFolderLocation, { recursive: true })
           await writeFile(outPath, buf)
-          ctx.body = ok(filename)
+          if (audioExts.has(ext)) {
+            try {
+              const sound = `[sound:${safeName}]`
+              mainWindow.webContents.send('message', 'anki-store-media', JSON.stringify({ sound }))
+            } catch {}
+          }
+          ctx.body = ok(safeName)
         } catch (e: any) {
           ctx.body = err(String(e?.message || e))
         }

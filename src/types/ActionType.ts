@@ -37,6 +37,7 @@ const enum KnowclipActionType {
   stopEditingCards = 'STOP_EDITING_CARDS',
   openDictionaryPopover = 'OPEN_DICTIONARY_POPOVER',
   closeDictionaryPopover = 'CLOSE_DICTIONARY_POPOVER',
+  setYomitanPreviewFields = 'SET_YOMITAN_PREVIEW_FIELDS',
   newCardFromSubtitlesRequest = 'NEW_CARD_FROM_SUBTITLES_REQUEST',
   selectWaveformItem = 'SELECT_WAVEFORM_ITEM',
   setCursorPosition = 'SET_CURSOR_POSITION',

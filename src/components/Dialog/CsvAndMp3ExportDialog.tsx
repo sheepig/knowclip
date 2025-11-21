@@ -121,9 +121,8 @@ const CsvAndMp3ExportDialog = ({
             fullWidth
             label={'Media folder location'}
             value={fields.mediaFolderLocation}
-            onClick={onFocusMediaFolderLocation}
-            onKeyPress={onFocusMediaFolderLocation}
             onChange={(e) => setField('mediaFolderLocation', e.target.value)}
+            placeholder={'/Users/you/Library/Application Support/Anki2/User 1/collection.media'}
             error={Boolean(errors.mediaFolderLocation)}
             helperText={errors.mediaFolderLocation}
           />

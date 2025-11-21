@@ -11,11 +11,22 @@ import cn from 'clsx'
 import r from '../redux'
 import css from './Media.module.css'
 import { Tooltip, IconButton } from '@mui/material'
-import { VerticalSplitSharp, HorizontalSplitSharp } from '@mui/icons-material'
+import {
+  VerticalSplitSharp,
+  HorizontalSplitSharp,
+  Delete as DeleteIcon,
+  Loop,
+  ShortTextTwoTone,
+} from '@mui/icons-material'
 import { KEYS } from '../utils/keyboard'
 import { MediaSubtitles, SubtitlesFileWithTrack } from '../selectors'
 import * as selectors from '../selectors'
 import FlashcardSectionForm from './FlashcardSectionForm'
+import { TextField } from '@mui/material'
+import { actions } from '../actions'
+import { getYomitan2AnkiTemplate } from '../selectors/settings'
+import { getKeyboardShortcut } from './KeyboardShortcuts'
+import { flashcardSectionForm$ as $ } from './FlashcardSectionForm.testLabels'
 
 export const MEDIA_PLAYER_ID = 'mediaPlayer'
 
@@ -337,14 +348,45 @@ const EditorOverlay = ({
   metadata: MediaFile | null
   playerRef: React.MutableRefObject<HTMLAudioElement | HTMLVideoElement | null>
 }) => {
-  const { editing, flashcard } = useSelector((state: AppState) => ({
+  const { editing, flashcard, isLoopOn } = useSelector((state: AppState) => ({
     editing: state.session.editingCards,
     flashcard: selectors.getHighlightedFlashcard(state),
+    isLoopOn: r.getLoopState(state),
   }))
+  const tmpl = useSelector((state: AppState) => getYomitan2AnkiTemplate(state))
+  const keys = (tmpl?.templateParams || '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean)
+
+  const parseExtra = (fields: any): Record<string, string> => {
+    const values: Record<string, string> = {}
+    for (const k of keys) values[k] = String(fields?.[k] || '')
+    return values
+  }
+
+  const dispatch = useDispatch()
+  const toggleLoop = React.useCallback(
+    () => dispatch(actions.toggleLoop('BUTTON')),
+    [dispatch]
+  )
+  const handleClickDeleteButton = React.useCallback(() => {
+    if (flashcard) dispatch(actions.deleteCard(flashcard.id))
+  }, [dispatch, flashcard?.id])
+  const handleClickPreviewButton = React.useCallback(() => {
+    dispatch(actions.stopEditingCards())
+  }, [dispatch])
+  const [extraValues, setExtraValues] = React.useState<Record<string, string>>(
+    () => parseExtra((flashcard as any)?.fields)
+  )
+  React.useEffect(() => {
+    setExtraValues(parseExtra((flashcard as any)?.fields))
+  }, [flashcard?.id])
 
   if (!metadata || !editing || !flashcard) return null
 
   const mediaIsPlaying = Boolean(playerRef.current && !playerRef.current.paused)
+
 
   return (
     <div className={css.editorOverlay}>
@@ -358,6 +400,31 @@ const EditorOverlay = ({
           autofocusFieldName={'transcription'}
         />
       </div>
+      {/* button zone */}
+      <section className={css.menu}>
+        <Tooltip
+          title={`Show card preview + cloze deletions (${getKeyboardShortcut(
+            'Stop editing fields'
+          )})`}
+        >
+          <IconButton onClick={handleClickPreviewButton}>
+            <ShortTextTwoTone />
+          </IconButton>
+        </Tooltip>
+      </section>
+
+      <section className={css.secondaryMenu}>
+        <Tooltip title={`Loop selection (${getKeyboardShortcut('Toggle loop')})`}>
+          <IconButton onClick={toggleLoop} color={isLoopOn ? 'secondary' : 'default'}>
+            <Loop />
+          </IconButton>
+        </Tooltip>{' '}
+        <Tooltip title="Delete clip and card">
+          <IconButton onClick={handleClickDeleteButton} id={$.deleteButton}>
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
+      </section>
     </div>
   )
 }

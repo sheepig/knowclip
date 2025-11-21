@@ -13,6 +13,7 @@ declare type SessionState = {
   dictionaryPopoverIsOpen: boolean
 
   progress: ProgressInfo | null
+  yomitanPreviewFields?: Record<string, string>
 }
 
 declare type LoopState = LoopReason | false

@@ -23,7 +23,6 @@ import { actions } from '../../actions'
 import * as selectors from '../../selectors'
 import { DialogProps } from './DialogProps'
 import reducer from '../../reducers/settings'
-import FilePathTextField from '../FilePathTextField'
 import {
   openInBrowser,
   showOpenDirectoriesDialog,
@@ -111,14 +110,16 @@ const SettingsDialog = ({ open }: DialogProps<SettingsDialogData>) => {
           <Paper className={css.settingsGroupBody}>
             <h3 className={css.heading}>Media export folder</h3>
             <FormControl className={css.formControl} margin="normal" fullWidth>
-              <FilePathTextField
+              <TextField
+                fullWidth
+                label={'Media folder location'}
                 value={settings.mediaFolderLocation || ''}
-                onSetFilePath={useCallback(
-                  (filePath) =>
-                    dispatchLocal(actions.setMediaFolderLocation(filePath)),
-                  [dispatchLocal]
-                )}
-                placeholderText="Click to set location"
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  dispatchLocal(actions.setMediaFolderLocation(e.target.value))
+                }
+                placeholder={
+                  'The absolute path of anki media folder'
+                }
               />
             </FormControl>
           </Paper>

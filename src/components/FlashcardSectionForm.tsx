@@ -7,12 +7,7 @@ import {
   FormEventHandler,
 } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { IconButton, Tooltip } from '@mui/material'
-import {
-  Delete as DeleteIcon,
-  Loop,
-  ShortTextTwoTone,
-} from '@mui/icons-material'
+import { TextField } from '@mui/material'
 import cn from 'clsx'
 import r from '../redux'
 import css from './FlashcardSection.module.css'
@@ -23,7 +18,7 @@ import { actions } from '../actions'
 import Field, {
   Props as FlashcardFormFieldProps,
 } from './FlashcardSectionFormField'
-import { getKeyboardShortcut } from './KeyboardShortcuts'
+import { getYomitan2AnkiTemplate } from '../selectors/settings'
 
 import { flashcardSectionForm$ as $ } from './FlashcardSectionForm.testLabels'
 
@@ -72,10 +67,6 @@ const FlashcardSectionForm = memo(
 
     const dispatch = useDispatch()
 
-    const toggleLoop = useCallback(
-      () => dispatch(actions.toggleLoop('BUTTON')),
-      [dispatch]
-    )
     const focusRef = useRef<HTMLInputElement>()
 
     // focus first field on highlight clip
@@ -99,12 +90,7 @@ const FlashcardSectionForm = memo(
       else loopOnInteract()
     }, [initialFocus, loopOnInteract])
 
-    const handleClickDeleteButton = useCallback(() => {
-      dispatch(actions.deleteCard(id))
-    }, [dispatch, id])
-    const handleClickPreviewButton = useCallback(() => {
-      dispatch(actions.stopEditingCards())
-    }, [dispatch])
+    
 
     const handleFlashcardSubmit: FormEventHandler = useCallback((e) => {
       e.preventDefault()
@@ -134,6 +120,21 @@ const FlashcardSectionForm = memo(
       inputProps: FIELD_INPUT_PROPS,
       onKeyPress: loopOnInteract,
     }
+
+    const tmpl = useSelector((state: AppState) => getYomitan2AnkiTemplate(state))
+    const defaultFieldNames = currentNoteType
+      ? getNoteTypeFields(currentNoteType)
+      : []
+    const templateKeys = (tmpl?.templateParams || '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean)
+    const unionKeys = Array.from(
+      new Set<string>([...templateKeys, ...Object.keys(flashcard.fields as any)])
+    )
+    const extraFieldKeys = unionKeys.filter(
+      (k) => k && !defaultFieldNames.includes(k as any)
+    )
 
     return (
       <form
@@ -174,6 +175,35 @@ const FlashcardSectionForm = memo(
                 />
               )
             })}
+          {extraFieldKeys.map((k) => (
+            <section key={`${k}_${flashcard.id}`} className={css.field}>
+              <TextField
+                className={$.flashcardFields}
+                inputProps={{
+                  ...FIELD_INPUT_PROPS,
+                  style: {
+                    ...(FIELD_INPUT_PROPS.style || {}),
+                    maxHeight: '4.5em',
+                    overflow: 'auto',
+                  },
+                }}
+                onChange={(e) => {
+                  const caret = (e.target as HTMLInputElement).selectionEnd || 0
+                  dispatch(actions.setFlashcardField(id, k, e.target.value, caret))
+                }}
+                onKeyPress={loopOnInteract}
+                onFocus={handleFocus}
+                name={k}
+                value={String((flashcard.fields as any)[k] || '')}
+                fullWidth
+                multiline
+                maxRows={3}
+                margin="dense"
+                label={capitalize(k)}
+                placeholder={k}
+              />
+            </section>
+          ))}
           <TagsInput
             options={allTags}
             tags={flashcard.tags}
@@ -182,35 +212,7 @@ const FlashcardSectionForm = memo(
           />
         </section>
 
-        <section className={css.menu}>
-          <Tooltip
-            title={`Show card preview + cloze deletions (${getKeyboardShortcut(
-              'Stop editing fields'
-            )})`}
-          >
-            <IconButton onClick={handleClickPreviewButton}>
-              <ShortTextTwoTone />
-            </IconButton>
-          </Tooltip>
-        </section>
-
-        <section className={css.secondaryMenu}>
-          <Tooltip
-            title={`Loop selection (${getKeyboardShortcut('Toggle loop')})`}
-          >
-            <IconButton
-              onClick={toggleLoop}
-              color={isLoopOn ? 'secondary' : 'default'}
-            >
-              <Loop />
-            </IconButton>
-          </Tooltip>{' '}
-          <Tooltip title="Delete clip and card">
-            <IconButton onClick={handleClickDeleteButton} id={$.deleteButton}>
-              <DeleteIcon />
-            </IconButton>
-          </Tooltip>
-        </section>
+        
       </form>
     )
   }

@@ -204,6 +204,9 @@ const session: Reducer<SessionState, Action> = (
     case A.closeDictionaryPopover:
       return { ...state, dictionaryPopoverIsOpen: false }
 
+    case A.setYomitanPreviewFields:
+      return { ...state, yomitanPreviewFields: action.fields }
+
     default:
       return state
   }
