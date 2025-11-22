@@ -22,6 +22,8 @@ import { KEYS } from '../utils/keyboard'
 import { MediaSubtitles, SubtitlesFileWithTrack } from '../selectors'
 import * as selectors from '../selectors'
 import FlashcardSectionForm from './FlashcardSectionForm'
+import useClozeControls from '../utils/clozeField/useClozeControls'
+import ClozeButtons from './FlashcardSectionDisplayClozeButtons'
 import { TextField } from '@mui/material'
 import { actions } from '../actions'
 import { getYomitan2AnkiTemplate } from '../selectors/settings'
@@ -209,7 +211,7 @@ const Media = ({
         />
       )}
 
-      <SubtitleOverlay />
+      {/* <SubtitleOverlay /> */}
       <EditorOverlay metadata={metadata} playerRef={playerRef} />
     </section>
   )
@@ -304,42 +306,42 @@ const Subtitles = ({
 }
 export default Media
 
-const SubtitleOverlay = () => {
-  const { selection, subsBases, fieldsToTracks, flashcard } = useSelector(
-    (state: AppState) => ({
-      selection: selectors.getSelectionItem(state),
-      subsBases: selectors.getSubtitlesCardBases(state),
-      fieldsToTracks: selectors.getSubtitlesFlashcardFieldLinks(state),
-      flashcard: selectors.getHighlightedFlashcard(state),
-    })
-  )
+// const SubtitleOverlay = () => {
+//   const { selection, subsBases, fieldsToTracks, flashcard } = useSelector(
+//     (state: AppState) => ({
+//       selection: selectors.getSelectionItem(state),
+//       subsBases: selectors.getSubtitlesCardBases(state),
+//       fieldsToTracks: selectors.getSubtitlesFlashcardFieldLinks(state),
+//       flashcard: selectors.getHighlightedFlashcard(state),
+//     })
+//   )
 
-  let transcription = ''
-  let meaning = ''
+//   let transcription = ''
+//   let meaning = ''
 
-  if (selection && selection.clipwaveType === 'Secondary') {
-    const preview = subsBases.getFieldsPreviewFromCardsBase(selection)
-    const tId = fieldsToTracks['transcription']
-    const mId = fieldsToTracks['meaning']
-    transcription = (tId && preview[tId]) || ''
-    meaning = (mId && preview[mId]) || ''
-  } else if (flashcard) {
-    transcription = (flashcard.fields as any).transcription || ''
-    meaning = (flashcard.fields as any).meaning || ''
-  }
+//   if (selection && selection.clipwaveType === 'Secondary') {
+//     const preview = subsBases.getFieldsPreviewFromCardsBase(selection)
+//     const tId = fieldsToTracks['transcription']
+//     const mId = fieldsToTracks['meaning']
+//     transcription = (tId && preview[tId]) || ''
+//     meaning = (mId && preview[mId]) || ''
+//   } else if (flashcard) {
+//     transcription = (flashcard.fields as any).transcription || ''
+//     meaning = (flashcard.fields as any).meaning || ''
+//   }
 
-  const show = Boolean(transcription || meaning)
-  if (!show) return null
+//   const show = Boolean(transcription || meaning)
+//   if (!show) return null
 
-  return (
-    <div className={css.subtitleOverlay}>
-      {transcription && (
-        <div className={css.subtitleLinePrimary}>{transcription}</div>
-      )}
-      {meaning && <div className={css.subtitleLineSecondary}>{meaning}</div>}
-    </div>
-  )
-}
+//   return (
+//     <div className={css.subtitleOverlay}>
+//       {transcription && (
+//         <div className={css.subtitleLinePrimary}>{transcription}</div>
+//       )}
+//       {meaning && <div className={css.subtitleLineSecondary}>{meaning}</div>}
+//     </div>
+//   )
+// }
 
 const EditorOverlay = ({
   metadata,
@@ -383,13 +385,66 @@ const EditorOverlay = ({
     setExtraValues(parseExtra((flashcard as any)?.fields))
   }, [flashcard?.id])
 
+  const clozeControls = useClozeControls({
+    deletions: flashcard?.cloze || [],
+    onNewClozeCard: React.useCallback(
+      (deletion) => {
+        if (flashcard)
+          dispatch(
+            actions.addClozeDeletion(
+              flashcard.id,
+              flashcard.cloze,
+              deletion
+            )
+          )
+      },
+      [dispatch, flashcard?.id, flashcard?.cloze]
+    ),
+    onEditClozeCard: React.useCallback(
+      (clozeIndex, ranges) => {
+        if (flashcard)
+          dispatch(
+            actions.editClozeDeletion(
+              flashcard.id,
+              flashcard.cloze,
+              clozeIndex,
+              ranges
+            )
+          )
+      },
+      [dispatch, flashcard?.id, flashcard?.cloze]
+    ),
+    onDeleteClozeCard: React.useCallback(
+      (clozeIndex) => {
+        if (flashcard)
+          dispatch(
+            actions.removeClozeDeletion(
+              flashcard.id,
+              flashcard.cloze,
+              clozeIndex
+            )
+          )
+      },
+      [dispatch, flashcard?.id, flashcard?.cloze]
+    ),
+  })
+
+  const onEditorKeyDown = React.useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === KEYS.enter && clozeControls.clozeIndex !== -1) {
+        e.preventDefault()
+        e.stopPropagation()
+      }
+    },
+    [clozeControls.clozeIndex]
+  )
+
   if (!metadata || !editing || !flashcard) return null
 
   const mediaIsPlaying = Boolean(playerRef.current && !playerRef.current.paused)
 
-
   return (
-    <div className={css.editorOverlay}>
+    <div className={css.editorOverlay} onKeyDown={onEditorKeyDown}>
       <div className={css.editorOverlayInner}>
         <FlashcardSectionForm
           className={cn(css.form)}
@@ -398,9 +453,20 @@ const EditorOverlay = ({
           clipId={flashcard.id}
           mediaIsPlaying={mediaIsPlaying}
           autofocusFieldName={'transcription'}
+          clozeControls={clozeControls}
         />
       </div>
       {/* button zone */}
+      {/* <section className={css.editorTopMenu}>
+        {(flashcard?.fields.transcription || '').trim() && (
+          <ClozeButtons controls={clozeControls} />
+        )}
+        {clozeControls.clozeIndex !== -1 && (
+          <div className={css.editorTopHint}>
+            select text and press 'Enter' to create cloze deletion
+          </div>
+        )}
+      </section> */}
       <section className={css.menu}>
         <Tooltip
           title={`Show card preview + cloze deletions (${getKeyboardShortcut(

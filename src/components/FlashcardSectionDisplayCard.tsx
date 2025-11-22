@@ -115,7 +115,7 @@ const FlashcardSectionDisplayCard = memo(
         menuItems={
           <>
             {fields.transcription.trim() && (
-              <ClozeButtons controls={clozeControls} />
+              <ClozeButtons controls={clozeControls} onEnterClozeMode={startEditing} />
             )}
             <Tooltip
               title={`Edit card (${getKeyboardShortcut(

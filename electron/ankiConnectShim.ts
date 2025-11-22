@@ -209,7 +209,7 @@ export async function startAnkiConnectShim(mainWindow: BrowserWindow) {
               mainWindow.webContents.send('message', 'anki-store-media', JSON.stringify({ sound }))
             } catch {}
           }
-          ctx.body = ok(safeName)
+          ctx.body = `"${safeName}"`;
         } catch (e: any) {
           ctx.body = err(String(e?.message || e))
         }

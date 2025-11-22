@@ -68,7 +68,8 @@
   left: 0;
   top: 0;
   bottom: 80px;
-  width: 50%;
+  width: 30%;
+  max-width: 900px;
   background: #ffffffcc;
   backdrop-filter: blur(1px);
   display: flex;
@@ -85,6 +86,30 @@
   height: 100%;
   overflow: auto;
   padding-bottom: 72px;
+}
+
+.editorTopMenu {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 4;
+  text-align: right;
+}
+.editorTopHint {
+  font-size: 12px;
+  color: #666;
+  margin-top: 6px;
+}
+
+/* Ensure cloze deletions in editorOverlay always show dashed underline */
+.editorOverlay .clozeFieldValue .blank {
+  border-bottom: 1px dashed rgba(0,0,0,0.35) !important;
+}
+.editorOverlay .clozeFieldValue .blankEditing {
+  border-bottom: 2px dashed #000 !important;
+}
+.editorOverlay .clozeFieldValue .previewBlank {
+  border-bottom: 2px dashed #000 !important;
 }
 
 .editorOverlay .menu,

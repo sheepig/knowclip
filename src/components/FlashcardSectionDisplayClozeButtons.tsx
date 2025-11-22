@@ -22,8 +22,10 @@ const ClozeButtons = ({
     getSelection,
     selection,
   },
+  onEnterClozeMode,
 }: {
   controls: ClozeControls
+  onEnterClozeMode?: () => void
 }) => {
   const nextId = ClozeIds[deletions.length]
   const buttons = deletions.map((_cloze, index) => {
@@ -44,6 +46,7 @@ const ClozeButtons = ({
         isActive={currentClozeIndex === index}
         confirmSelection={confirmSelection}
         selection={selection}
+        onEnterClozeMode={onEnterClozeMode}
       />
     )
   })
@@ -54,16 +57,10 @@ const ClozeButtons = ({
         key={nextId}
         hoverText={
           currentClozeIndex === -1
-            ? `Make cloze deletion (${getKeyboardShortcut(
-                'Start making cloze deletion'
-              )} key)`
+            ? `Make cloze deletion (fill-in-blank) (C key)`
             : currentClozeIndex === deletions.length
-            ? `Stop editing cloze deletions (${getKeyboardShortcut(
-                'Stop making cloze deletion'
-              )})`
-            : `Make a new cloze deletion card (${getKeyboardShortcut(
-                'Start making cloze deletion'
-              )} key)`
+            ? `Stop editing cloze deletions (Enter)`
+            : `Make a new cloze deletion card (fill-in-blank) (C key)`
         }
         index={deletions.length}
         id={nextId}
@@ -72,12 +69,14 @@ const ClozeButtons = ({
         getSelection={getSelection}
         confirmSelection={confirmSelection}
         selection={selection}
+        onEnterClozeMode={onEnterClozeMode}
       />
     )
+  const open = currentClozeIndex !== -1 || deletions.length > 0
   return (
     <section
       className={cn(css.clozeButtons, {
-        [css.openClozeButtons]: currentClozeIndex !== -1,
+        [css.openClozeButtons]: open,
       })}
     >
       {buttons}
@@ -95,6 +94,7 @@ const ClozeButton = ({
   confirmSelection,
   getSelection,
   selection,
+  onEnterClozeMode,
 }: {
   hoverText: string
   id: ClozeId
@@ -105,6 +105,7 @@ const ClozeButton = ({
   confirmSelection: (clozeIndex: number, selection: ClozeRange) => void
   getSelection: () => ClozeRange | null
   selection: MutableRefObject<ClozeRange | null>
+  onEnterClozeMode?: () => void
 }) => {
   const handleMouseDown: MouseEventHandler = useCallback(
     (e) => {
@@ -130,6 +131,7 @@ const ClozeButton = ({
           )
       } else {
         setClozeIndex(index, 'cloze button clicked')
+        if (onEnterClozeMode) onEnterClozeMode()
       }
       selection.current = null
       ;(e.target as HTMLInputElement).focus()

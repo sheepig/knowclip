@@ -195,11 +195,11 @@ const ClozeField = ({
         title: clozeHint,
       }
     : {
-        title:
-          deletions.length >= ClozeIds.length
-            ? "You've reached the maximum number of cloze deletions for this card."
-            : 'Select text and press C key to create a new cloze deletion card (a.k.a. fill-in-the blank).',
-        placement: 'top' as const,
+      title:
+        deletions.length >= ClozeIds.length
+          ? "You've reached the maximum number of cloze deletions for this card."
+          : 'Select text and press C key to create a new cloze deletion card (a.k.a. fill-in-the blank).',
+      placement: 'top' as const,
       }
 
   return (

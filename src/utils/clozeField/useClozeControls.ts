@@ -143,7 +143,7 @@ export default function useClozeControls({
       selection.current = null
       const clozeIsActive = clozeIndex !== -1
 
-      if ((isEnterKey(e) || isCKey(e)) && currentSelection) {
+      if (isEnterKey(e) && currentSelection) {
         if (clozeIsActive) return confirmSelection(clozeIndex, currentSelection)
 
         const newIndex = deletions.length
@@ -155,12 +155,11 @@ export default function useClozeControls({
             `You've already reached the maximum of ${ClozeIds.length} cloze deletions per card.`
           )
         )
-      } else if (isCKey(e)) {
-        const potentialNewIndex = clozeIndex + 1
-        const newIndex =
-          potentialNewIndex > deletions.length ? -1 : potentialNewIndex
-        return setClozeIndex(newIndex, 'c pressed')
-      } else if (isEnterKey(e) || e.key === KEYS.escape) {
+      } else if (
+        isEnterKey(e) ||
+        e.key === KEYS.qLowercase ||
+        e.key === KEYS.qUppercase
+      ) {
         if (clozeIsActive && !(window as any).clozeButtonWasPressed)
           setClozeIndex(-1, 'enter or escape pressed')
       }
@@ -178,13 +177,53 @@ export default function useClozeControls({
     setClozeIndex,
   ])
 
+  useEffect(() => {
+    const keydown = (e: KeyboardEvent) => {
+      const clozeIsActive = clozeIndex !== -1
+      if (isPureCKey(e)) {
+        const s = getSelection()
+        const currentSelection = s && s.start !== s.end ? s : null
+        if (currentSelection) {
+          if (clozeIsActive) confirmSelection(clozeIndex, currentSelection)
+          else {
+            const newIndex = deletions.length
+            if (newIndex < ClozeIds.length)
+              confirmSelection(newIndex, currentSelection)
+            else
+              dispatch(
+                r.simpleMessageSnackbar(
+                  `You've already reached the maximum of ${ClozeIds.length} cloze deletions per card.`
+                )
+              )
+          }
+        } else {
+          const potentialNewIndex = clozeIndex + 1
+          const newIndex =
+            potentialNewIndex > deletions.length ? -1 : potentialNewIndex
+          setClozeIndex(newIndex, 'c pressed')
+        }
+        e.preventDefault()
+      }
+    }
+
+    document.addEventListener('keydown', keydown)
+    return () => document.removeEventListener('keydown', keydown)
+  }, [
+    clozeIndex,
+    confirmSelection,
+    deletions.length,
+    dispatch,
+    getSelection,
+    setClozeIndex,
+  ])
+
   const registerSelection = useCallback(() => {
     selection.current = getSelection() || null
   }, [getSelection, selection])
 
   useEffect(() => {
     const keyup = (e: KeyboardEvent) => {
-      if (isEnterKey(e) || isCKey(e)) {
+      if (isEnterKey(e)) {
         registerSelection()
       }
     }
@@ -273,4 +312,14 @@ function isEnterKey(e: KeyboardEvent) {
 
 function isCKey(e: KeyboardEvent): boolean {
   return e.key.toLowerCase() === KEYS.cLowercase && !e.metaKey && !e.ctrlKey
+}
+
+function isPureCKey(e: KeyboardEvent): boolean {
+  return (
+    e.key.toLowerCase() === KEYS.cLowercase &&
+    !e.metaKey &&
+    !e.ctrlKey &&
+    !e.altKey &&
+    !e.shiftKey
+  )
 }

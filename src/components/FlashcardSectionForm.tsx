@@ -7,10 +7,11 @@ import {
   FormEventHandler,
 } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { TextField } from '@mui/material'
+import { TextField, InputLabel } from '@mui/material'
 import cn from 'clsx'
 import r from '../redux'
 import css from './FlashcardSection.module.css'
+import displayCss from './FlashcardSectionDisplay.module.css'
 import { getNoteTypeFields } from '../utils/noteType'
 import TagsInput from './TagsInput'
 import VideoStillDisplay from './FlashcardSectionFormVideoStill'
@@ -19,6 +20,7 @@ import Field, {
   Props as FlashcardFormFieldProps,
 } from './FlashcardSectionFormField'
 import { getYomitan2AnkiTemplate } from '../selectors/settings'
+import ClozeField from './FlashcardSectionDisplayClozeField'
 
 import { flashcardSectionForm$ as $ } from './FlashcardSectionForm.testLabels'
 
@@ -40,6 +42,7 @@ const FlashcardSectionForm = memo(
     mediaIsPlaying,
     autofocusFieldName,
     flashcard,
+    clozeControls,
   }: {
     className?: string
     mediaFile: MediaFile
@@ -47,6 +50,7 @@ const FlashcardSectionForm = memo(
     flashcard: Flashcard
     mediaIsPlaying: boolean
     autofocusFieldName: FlashcardFieldName
+    clozeControls?: ReturnType<typeof import('../utils/clozeField/useClozeControls').default>
   }) => {
     const {
       allTags,
@@ -163,6 +167,40 @@ const FlashcardSectionForm = memo(
             getNoteTypeFields(currentNoteType).map((fieldName, i) => {
               const linkedTrackId =
                 subtitlesFlashcardFieldLinks[fieldName] || null
+              if (
+                fieldName === 'transcription' &&
+                clozeControls &&
+                clozeControls.clozeIndex !== -1
+              ) {
+                const labelText = (() => {
+                  const track = subtitles.all.find((s) => s.id === linkedTrackId)
+                  return track
+                    ? `${capitalize(fieldName)} (${track.label})`
+                    : capitalize(fieldName)
+                })()
+                return (
+                  <section
+                    key={`${fieldName}_${flashcard.id}`}
+                    className={cn(css.field, displayCss.previewField)}
+                  >
+                    <InputLabel shrink margin="dense">
+                      {labelText}
+                    </InputLabel>
+                    <ClozeField
+                      className={cn(
+                        fieldContainerLabels[fieldName],
+                        displayCss.previewFieldTranscription
+                      )}
+                      fieldName={fieldName as any}
+                      subtitles={subtitles}
+                      linkedTracks={subtitlesFlashcardFieldLinks}
+                      mediaFileId={mediaFile.id}
+                      value={String((flashcard.fields as any)[fieldName] || '')}
+                      clozeControls={clozeControls}
+                    />
+                  </section>
+                )
+              }
               return (
                 <Field
                   key={`${fieldName}_${flashcard.id}`}

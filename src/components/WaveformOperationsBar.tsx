@@ -116,7 +116,7 @@ const WaveformOperationsBar = ({
 
         {flashcard && (flashcard.fields as any).transcription?.trim() && (
           <section>
-            <ClozeButtons controls={clozeControls} />
+            <ClozeButtons controls={clozeControls} onEnterClozeMode={startCloze} />
           </section>
         )}
 

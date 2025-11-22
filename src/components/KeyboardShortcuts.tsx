@@ -16,8 +16,8 @@ const getKeyboardShortcuts = (platform: Window['electronApi']['platform']) =>
     'Start editing fields': 'E',
     'Delete clip and card': 'Ctrl + Shift + D',
     'Stop editing fields': 'Esc',
-    'Start making cloze deletion': 'C',
-    'Stop making cloze deletion': 'Esc',
+    'Start making cloze deletion (fill-in-blank)': 'C',
+    'Stop making cloze deletion (fill-in-blank)': 'Q',
     'Save project': 'Cmd + S',
   } as const)
 
@@ -83,8 +83,8 @@ const KeyboardShortcuts = () => {
               <h3 className={css.heading}>Editing flashcards</h3>
               <Shortcut action="Start editing fields" />
               <Shortcut action="Stop editing fields" />
-              <Shortcut action="Start making cloze deletion" />
-              <Shortcut action="Stop making cloze deletion" />
+              <Shortcut action="Start making cloze deletion (fill-in-blank)" />
+              <Shortcut action="Stop making cloze deletion (fill-in-blank)" />
               <Shortcut action="Delete clip and card" />
             </section>
 
