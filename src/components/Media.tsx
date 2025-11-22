@@ -190,7 +190,7 @@ const Media = ({
 
   return (
     <section className={cn(className, css.container)}>
-      <Tooltip
+      {/* <Tooltip
         title={
           viewMode === 'HORIZONTAL'
             ? 'Switch to vertical view'
@@ -208,7 +208,7 @@ const Media = ({
             <HorizontalSplitSharp />
           )}
         </IconButton>
-      </Tooltip>
+      </Tooltip> */}
 
       {metadata.isVideo ? (
         <video
