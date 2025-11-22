@@ -56,12 +56,12 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: dist
-          path: dist/Knowclip_*
+          path: dist/KnowclipExtra_*
       - name: Release
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v1
         with:
           draft: true
-          files: dist/Knowclip_*
+          files: dist/KnowclipExtra_*
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
