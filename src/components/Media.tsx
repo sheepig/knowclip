@@ -427,7 +427,7 @@ const EditorOverlay = ({
       [dispatch, flashcard?.id, flashcard?.cloze]
     ),
     onEditClozeCard: React.useCallback(
-      (clozeIndex, ranges) => {
+      (clozeIndex: number, ranges: any) => {
         if (flashcard)
           dispatch(
             actions.editClozeDeletion(
@@ -441,7 +441,7 @@ const EditorOverlay = ({
       [dispatch, flashcard?.id, flashcard?.cloze]
     ),
     onDeleteClozeCard: React.useCallback(
-      (clozeIndex) => {
+      (clozeIndex: number) => {
         if (flashcard)
           dispatch(
             actions.removeClozeDeletion(

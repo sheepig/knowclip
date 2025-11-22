@@ -9,6 +9,8 @@ export const KEYS = {
   shift: 'Shift',
   aLowercase: 'a',
   aUppercase: 'A',
+  qLowercase: 'q',
+  qUppercase: 'Q',
   cLowercase: 'c',
   cUppercase: 'C',
   eLowercase: 'e',

@@ -176,6 +176,9 @@
         "id": {
           "type": "string"
         },
+        "offsetMs": {
+          "type": "number"
+        },
         "streamIndex": {
           "type": "number"
         },
@@ -239,6 +242,9 @@
         },
         "name": {
           "type": "string"
+        },
+        "offsetMs": {
+          "type": "number"
         },
         "type": {
           "const": "External",

@@ -44,7 +44,7 @@ const externalSubtitlesFileEventHandlers: FileEventHandlers<ExternalSubtitlesFil
           )
           if (r.getCurrentFileId(state) !== validatedFile.parentId) return []
 
-          const relation = mediaFile.subtitles.find((s) => s.id === track.id)
+          const relation = mediaFile ? mediaFile.subtitles.find((s) => s.id === track.id) : null
           const maybeOffset = (relation as any)?.offsetMs || 0
           return [
             ...(mediaFile && !mediaFile.subtitles.some((s) => s.id === track.id)

@@ -149,7 +149,9 @@ async function render() {
         store.dispatch(actions.setYomitanPreviewFields(fieldsObj))
         store.dispatch(compositeSnackbarActions.simpleMessageSnackbar('Received Yomitan add-card, but no card is being edited.', 3000))
       }
-    } catch {}
+    } catch (err) {
+      console.error('Failed to handle ipc:anki-add-note', err)
+    }
   })
 
   window.addEventListener('ipc:anki-store-media', (e: Event) => {
@@ -164,7 +166,9 @@ async function render() {
         store.dispatch(actions.setFlashcardField(flashcard.id, 'audio', sound, 0))
         store.dispatch(compositeSnackbarActions.simpleMessageSnackbar('Audio attached to current card.', 2000))
       }
-    } catch {}
+    } catch (err) {
+      console.error('Failed to handle ipc:anki-store-media', err)
+    }
   })
 
   root.render(

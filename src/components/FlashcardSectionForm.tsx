@@ -192,7 +192,7 @@ const FlashcardSectionForm = memo(
                         displayCss.previewFieldTranscription
                       )}
                       fieldName={fieldName as any}
-                      subtitles={subtitles}
+                      subtitles={mediaFile.subtitles}
                       linkedTracks={subtitlesFlashcardFieldLinks}
                       mediaFileId={mediaFile.id}
                       value={String((flashcard.fields as any)[fieldName] || '')}

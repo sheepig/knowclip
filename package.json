@@ -73,6 +73,7 @@
     "start": "npm run electron-vite",
     "build:homepage": "npm run --prefix homepage build",
     "previtest": "npm run build-schemas",
+    "pretest": "npm run build-schemas",
     "test": "npm run vitest run -- --config ./vitest.config.ts",
     "build": "npm run build-schemas && npm run electron-vite -- build --mode",
     "integration": "npm run build -- integration && npm run integration:skip-build",
