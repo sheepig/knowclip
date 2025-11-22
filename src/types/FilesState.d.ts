@@ -77,10 +77,12 @@ declare type MediaSubtitlesRelation =
 declare type EmbeddedSubtitlesTrackRelation = {
   type: 'EmbeddedSubtitlesTrack'
   id: string
+  offsetMs?: number
 }
 declare type ExternalSubtitlesTrackRelation = {
   type: 'ExternalSubtitlesTrack'
   id: string
+  offsetMs?: number
 }
 
 declare type SubtitlesFile = ExternalSubtitlesFile | VttConvertedSubtitlesFile
