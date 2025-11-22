@@ -1,6 +1,6 @@
 {
   "name": "knowclip",
-  "productName": "Knowclip",
+  "productName": "KnowclipExtra",
   "version": "0.14.3-beta",
   "private": true,
   "engines": {
@@ -160,9 +160,9 @@
     "yalc": "^1.0.0-pre.53"
   },
   "build": {
-    "appId": "com.electron.knowclip",
+    "appId": "com.electron.knowclipExtra",
     "asar": true,
-    "productName": "Knowclip",
+    "productName": "knowclipExtra",
     "npmRebuild": true,
     "copyright": "Copyright 2020 Justin Silvestre",
     "files": [
