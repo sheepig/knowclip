@@ -212,3 +212,19 @@ ipcMain.on('closed', function () {
   context.mainWindow = null
   app.quit()
 })
+// Configure graphics backend per platform to reduce EGL probing and noisy logs
+const isDev = Boolean(process.env.NODE_ENV === 'development' || process.env.VITE_INTEGRATION_DEV)
+if (process.platform === 'darwin') {
+  // Use ANGLE + Metal on macOS
+  app.commandLine.appendSwitch('use-angle', 'metal')
+} else if (process.platform === 'win32') {
+  // Use ANGLE + D3D11 on Windows
+  app.commandLine.appendSwitch('use-angle', 'd3d11')
+} else {
+  // Prefer EGL on Linux to avoid desktop GL probing
+  app.commandLine.appendSwitch('use-gl', 'egl')
+}
+// Lower log verbosity in packaged builds
+if (isPackaged && !isDev) {
+  app.commandLine.appendSwitch('log-level', '3')
+}
