@@ -138,12 +138,16 @@ export default function useClozeControls({
   }, [clozeIndex, deletions.length, setClozeIndex])
   useEffect(() => {
     const keyup = (e: KeyboardEvent) => {
+      const ae = document.activeElement as HTMLElement | null
+      const withinCloze = Boolean(
+        inputRef.current && ae && (ae === inputRef.current || inputRef.current.contains(ae))
+      )
       const s = getSelection()
       const currentSelection = s && s.start !== s.end ? s : null
       selection.current = null
       const clozeIsActive = clozeIndex !== -1
 
-      if (isEnterKey(e) && currentSelection) {
+      if (isEnterKey(e) && currentSelection && withinCloze) {
         if (clozeIsActive) return confirmSelection(clozeIndex, currentSelection)
 
         const newIndex = deletions.length
@@ -180,7 +184,12 @@ export default function useClozeControls({
   useEffect(() => {
     const keydown = (e: KeyboardEvent) => {
       const clozeIsActive = clozeIndex !== -1
+      const ae = document.activeElement as HTMLElement | null
+      const withinCloze = Boolean(
+        inputRef.current && ae && (ae === inputRef.current || inputRef.current.contains(ae))
+      )
       if (isPureCKey(e)) {
+        if (!withinCloze) return
         const s = getSelection()
         const currentSelection = s && s.start !== s.end ? s : null
         if (currentSelection) {

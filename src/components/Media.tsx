@@ -25,6 +25,7 @@ import FlashcardSectionForm from './FlashcardSectionForm'
 import useClozeControls from '../utils/clozeField/useClozeControls'
 import ClozeButtons from './FlashcardSectionDisplayClozeButtons'
 import { TextField } from '@mui/material'
+import { ClozeIds, getMetaOrCtrlKey } from './FlashcardSectionDisplayClozeField'
 import { actions } from '../actions'
 import { getYomitan2AnkiTemplate } from '../selectors/settings'
 import { getKeyboardShortcut } from './KeyboardShortcuts'
@@ -461,8 +462,23 @@ const EditorOverlay = ({
         e.preventDefault()
         e.stopPropagation()
       }
+      if ((getMetaOrCtrlKey(e) || e.ctrlKey) && e.key.toLowerCase() === KEYS.fLowercase) {
+        e.preventDefault()
+        e.stopPropagation()
+        const max = ClozeIds.length
+        const count = clozeControls.deletions.length
+        if (clozeControls.clozeIndex === -1) {
+          if (count < max) clozeControls.setClozeIndex(count, 'ctrl+f pressed')
+          else dispatch(
+            actions.simpleMessageSnackbar(
+              `You've already reached the maximum of ${max} cloze deletions per card.`,
+              3000
+            )
+          )
+        }
+      }
     },
-    [clozeControls.clozeIndex]
+    [clozeControls.clozeIndex, clozeControls.deletions.length, dispatch]
   )
 
   if (!metadata || !editing || !flashcard) return null

@@ -201,7 +201,24 @@ const FlashcardSectionForm = memo(
                   </section>
                 )
               }
-              return (
+              return fieldName === 'transcription' ? (
+                <section
+                  key={`${fieldName}_${flashcard.id}`}
+                  className={cn(css.field, css.fieldTall)}
+                >
+                  <div style={{ fontSize: 12, color: '#666', marginTop: 4 }}>
+                    focus on transcription and enter 'cmd/ctrl + F' to create fill-in-blanks
+                  </div>
+                  <Field
+                    name={fieldName}
+                    subtitles={subtitles}
+                    linkedSubtitlesTrack={linkedTrackId}
+                    onFocus={!initialFocus && i === 0 ? () => {} : handleFocus}
+                    className={fieldContainerLabels[fieldName]}
+                    {...fieldProps}
+                  />
+                </section>
+              ) : (
                 <Field
                   key={`${fieldName}_${flashcard.id}`}
                   name={fieldName}

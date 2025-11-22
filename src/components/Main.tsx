@@ -315,7 +315,7 @@ const Main = () => {
             style={{ background: 'gray', alignSelf: 'flex-start', width: '100%' }}
           />
           <div style={{ position: 'absolute', top: 6, right: 6 }}>
-            <Tooltip title="字幕句子划分以绑定到 transcription 的字幕轨为准；当相邻句子的间隔小于项目设置的 merge adjacent gap 时，划分为同一句。" placement="left">
+          <Tooltip title="Subtitle sentence segmentation follows the subtitles track linked to “transcription”; if the gap between adjacent sentences is smaller than the project’s “merge adjacent gap” threshold, they are treated as a single sentence." placement="left">
               <IconButton size="small" aria-label="Subtitles segmentation info">
                 <HelpOutline fontSize="small" style={{ color: '#fff' }} />
               </IconButton>

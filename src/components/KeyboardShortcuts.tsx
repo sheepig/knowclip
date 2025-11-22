@@ -16,7 +16,7 @@ const getKeyboardShortcuts = (platform: Window['electronApi']['platform']) =>
     'Start editing fields': 'E',
     'Delete clip and card': 'Ctrl + Shift + D',
     'Stop editing fields': 'Esc',
-    'Start making cloze deletion (fill-in-blank)': 'C',
+    'Start making cloze deletion (fill-in-blank)': `${platform === 'win32' ? 'Ctrl' : 'Cmd'} + F`,
     'Stop making cloze deletion (fill-in-blank)': 'Q',
     'Save project': 'Cmd + S',
   } as const)

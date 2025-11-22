@@ -82,7 +82,7 @@
 }
 
 .horizontalForm {
-  padding: 2rem 4rem;
+  /* padding: 2rem 4rem; */
   flex-flow: row nowrap;
   justify-content: center;
 }
@@ -182,6 +182,11 @@
 .field {
   position: relative;
   max-height: 6.2em;
+  overflow: auto;
+}
+
+.fieldTall {
+  max-height: 8.5em;
   overflow: auto;
 }
 

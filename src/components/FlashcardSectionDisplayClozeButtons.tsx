@@ -37,7 +37,7 @@ const ClozeButtons = ({
         hoverText={
           currentClozeIndex === index
             ? `Finish editing cloze deletion card (Enter)`
-            : `Edit cloze deletion card #${index + 1} (C key)`
+            : `Edit cloze deletion card #${index + 1} (Ctrl + F)`
         }
         id={clozeId}
         setClozeIndex={setClozeIndex}
@@ -57,10 +57,10 @@ const ClozeButtons = ({
         key={nextId}
         hoverText={
           currentClozeIndex === -1
-            ? `Make cloze deletion (fill-in-blank) (C key)`
+            ? `Make cloze deletion (fill-in-blank) (Ctrl + F)`
             : currentClozeIndex === deletions.length
             ? `Stop editing cloze deletions (Enter)`
-            : `Make a new cloze deletion card (fill-in-blank) (C key)`
+            : `Make a new cloze deletion card (fill-in-blank) (Ctrl + F)`
         }
         index={deletions.length}
         id={nextId}
