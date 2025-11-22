@@ -184,12 +184,14 @@ function toMediaSubtitlesRelation(s: SubtitlesJson): MediaSubtitlesRelation {
       return {
         type: 'EmbeddedSubtitlesTrack',
         id: s.id,
+        offsetMs: s.offsetMs || 0,
       }
 
     case 'External':
       return {
         type: 'ExternalSubtitlesTrack',
         id: s.id,
+        offsetMs: s.offsetMs || 0,
       }
   }
 }

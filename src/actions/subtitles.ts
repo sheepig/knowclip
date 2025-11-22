@@ -18,6 +18,12 @@ export const subtitlesActions = {
     track,
   }),
 
+  setSubtitlesOffset: (id: SubtitlesTrackId, offsetMs: number) => ({
+    type: A.setSubtitlesOffset,
+    id,
+    offsetMs,
+  }),
+
   makeClipsFromSubtitles: (
     fileId: MediaFileId,
     fieldNamesToTrackIds: Partial<TransliterationFlashcardFields>,

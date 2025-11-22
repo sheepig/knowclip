@@ -118,8 +118,7 @@ const saveProject: AppEpic = (
     ofType(A.saveProjectRequest as const),
     mergeMap(async () => {
       const projectMetadata = r.getCurrentProject(state$.value)
-      if (!projectMetadata)
-        return Boolean({ type: 'NOOP_SAVE_PROJECT_WITH_NONE_OPEN' })
+      if (!projectMetadata) return false
       const projectFile = r.getFileAvailabilityById(
         state$.value,
         'ProjectFile',

@@ -79,6 +79,8 @@ const vttFileEventHandlers: FileEventHandlers<VttConvertedSubtitlesFile> = {
         const chunks = sanitizeSubtitles(chunksResult.value)
         const track = newEmbeddedSubtitlesTrack(validatedFile.id, chunks)
 
+        const relation = mediaFile.subtitles.find((s) => s.id === track.id)
+        const maybeOffset = (relation as any)?.offsetMs || 0
         return [
           ...(mediaFile && !mediaFile.subtitles.some((s) => s.id === track.id)
             ? [
@@ -92,6 +94,7 @@ const vttFileEventHandlers: FileEventHandlers<VttConvertedSubtitlesFile> = {
               ]
             : []),
           r.mountSubtitlesTrack(track),
+          r.setSubtitlesOffset(track.id, maybeOffset),
         ]
       }
 
@@ -124,6 +127,8 @@ const vttFileEventHandlers: FileEventHandlers<VttConvertedSubtitlesFile> = {
       )
       if (!mediaFile || r.getCurrentFileId(state) !== mediaFile.id) return []
 
+      const relation = mediaFile.subtitles.find((s) => s.id === track.id)
+      const maybeOffset = (relation as any)?.offsetMs || 0
       return [
         ...(mediaFile && !mediaFile.subtitles.some((s) => s.id === track.id)
           ? [
@@ -136,6 +141,7 @@ const vttFileEventHandlers: FileEventHandlers<VttConvertedSubtitlesFile> = {
             ]
           : []),
         r.mountSubtitlesTrack(track),
+        r.setSubtitlesOffset(track.id, maybeOffset),
       ]
     },
   ],

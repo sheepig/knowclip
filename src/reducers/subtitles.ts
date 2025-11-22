@@ -32,6 +32,14 @@ const subtitles: Reducer<SubtitlesState, Action> = (
           mode: 'showing',
         } satisfies SubtitlesTrack,
       }
+    case A.setSubtitlesOffset:
+      return {
+        ...state,
+        [action.id]: {
+          ...state[action.id],
+          offsetMs: action.offsetMs,
+        } satisfies SubtitlesTrack,
+      }
     case A.updateFile: {
       const { update } = action
 

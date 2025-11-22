@@ -69,6 +69,7 @@ const enum KnowclipActionType {
   makeClipsFromSubtitles = 'MAKE_CLIPS_FROM_SUBTITLES',
   showSubtitlesClipsDialogRequest = 'SHOW_SUBTITLES_CLIPS_DIALOG_REQUEST',
   linkFlashcardFieldToSubtitlesTrackRequest = 'LINK_FLASHCARD_FIELD_TO_SUBTITLES_TRACK_REQUEST',
+  setSubtitlesOffset = 'SET_SUBTITLES_OFFSET',
   addFile = 'ADD_FILE',
   goToSubtitlesChunk = 'GO_TO_SUBTITLES_CHUNK',
   deleteFileRequest = 'DELETE_FILE_REQUEST',

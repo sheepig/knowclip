@@ -112,6 +112,7 @@ export const getProjectJson = <F extends FlashcardFields>(
             type: 'External',
             chunksMetadata: sourceFile ? sourceFile.chunksMetadata : null,
             name: sourceFile ? sourceFile.name : 'External subtitles file',
+            offsetMs: state.subtitles[s.id]?.offsetMs || 0,
           }
         })
       const embeddedSubtitles = mediaFile.subtitlesTracksStreamIndexes
@@ -136,6 +137,7 @@ export const getProjectJson = <F extends FlashcardFields>(
                 streamIndex: streamIndex,
                 type: 'Embedded',
                 chunksMetadata: sourceFile ? sourceFile.chunksMetadata : null,
+                offsetMs: state.subtitles[s.id]?.offsetMs || 0,
               }
               return subtitles
             }

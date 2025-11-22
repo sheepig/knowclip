@@ -245,6 +245,9 @@ const EmbeddedTrackMenuItem = ({
   linkedFieldTitle: string | undefined
 }) => {
   const dispatch = useDispatch()
+  const [offsetInput, setOffsetInput] = React.useState<number>(track?.offsetMs || 0)
+  React.useEffect(() => setOffsetInput(track?.offsetMs || 0), [track?.offsetMs])
+  const offsetDebounceRef = React.useRef<number | null>(null)
 
   return (
     <>
@@ -267,6 +270,23 @@ const EmbeddedTrackMenuItem = ({
           className={css.subtitlesMenuListItemText}
           primary={title}
           secondary={linkedFieldTitle}
+        />
+        <TextField
+          label="Offset (ms)"
+          type="number"
+          inputProps={{ step: 50 }}
+          size="small"
+          value={offsetInput}
+          onChange={(e) => {
+            const v = Number(e.target.value) || 0
+            setOffsetInput(v)
+            dispatch(actions.setSubtitlesOffset(id, v))
+            if (offsetDebounceRef.current) window.clearTimeout(offsetDebounceRef.current)
+            offsetDebounceRef.current = window.setTimeout(() => {
+              dispatch(actions.saveProjectRequest())
+            }, 3000)
+          }}
+          style={{ width: 96, marginLeft: 12, marginRight: 56 }}
         />
       </MenuItem>
     </>
@@ -316,6 +336,9 @@ const ExternalTrackMenuItem = ({
   )
 
   const toggleVisible = useToggleVisible(track, id)
+  const [offsetInput, setOffsetInput] = React.useState<number>(track?.offsetMs || 0)
+  React.useEffect(() => setOffsetInput(track?.offsetMs || 0), [track?.offsetMs])
+  const offsetDebounceRef = React.useRef<number | null>(null)
 
   const stopPropagation: EventHandler<any> = useCallback((e) => {
     e.stopPropagation()
@@ -344,6 +367,23 @@ const ExternalTrackMenuItem = ({
         className={css.subtitlesMenuListItemText}
         primary={title}
         secondary={linkedFieldTitle}
+      />
+      <TextField
+        label="Offset (ms)"
+        type="number"
+        inputProps={{ step: 50 }}
+        size="small"
+        value={offsetInput}
+        onChange={(e) => {
+          const v = Number(e.target.value) || 0
+          setOffsetInput(v)
+          dispatch(actions.setSubtitlesOffset(id, v))
+          if (offsetDebounceRef.current) window.clearTimeout(offsetDebounceRef.current)
+          offsetDebounceRef.current = window.setTimeout(() => {
+            dispatch(actions.saveProjectRequest())
+          }, 3000)
+        }}
+        style={{ width: 96, marginLeft: 12, marginRight: 56 }}
       />
 
       <Tooltip title="More actions">

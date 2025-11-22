@@ -147,6 +147,32 @@ const Media = ({
   }, [props.src])
 
   useSyncSubtitlesVisibility(subtitles.all, playerRef)
+  const appliedOffsetsRef = useRef(new Map<string, number>())
+  useEffect(() => {
+    const player = playerRef.current
+    if (!player) return
+    const duration = player.duration || Infinity
+    const textTracks = player.textTracks
+    Array.from(textTracks).forEach((domTrack) => {
+      const trackId = domTrack.id
+      const s = subtitles.all.find((t) => t.id === trackId)
+      const desiredMs = (s?.track?.offsetMs || 0)
+      const desiredSec = desiredMs / 1000
+      const currentApplied = appliedOffsetsRef.current.get(trackId) || 0
+      const delta = desiredSec - currentApplied
+      if (!delta || !domTrack.cues) return
+      // adjust all cues by delta
+      const cues = domTrack.cues as any
+      for (let i = 0; i < cues.length; i++) {
+        const cue = cues[i]
+        const newStart = Math.max(0, Math.min(duration, cue.startTime + delta))
+        const newEnd = Math.max(0, Math.min(duration, cue.endTime + delta))
+        cue.startTime = newStart
+        cue.endTime = newEnd
+      }
+      appliedOffsetsRef.current.set(trackId, desiredSec)
+    })
+  }, [playerRef, subtitles])
 
   const dispatch = useDispatch()
   const toggleViewMode = useCallback(() => {

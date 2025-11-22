@@ -136,13 +136,14 @@ function combineSubtitles(
   const baseTrackId = fieldsToTracks[fieldsCuePriority[0]!] as
     | SubtitlesTrackId
     | undefined
+  const baseOffset = baseTrackId ? (subtitles[baseTrackId].offsetMs || 0) : 0
   const tracksAsClips: ChunkClip[] = baseTrackId
     ? subtitles[baseTrackId].chunks
         .map((chunk, i) => ({
           clipwaveType: 'Primary' as const,
           id: subBaseClipId(baseTrackId, i),
-          start: chunk.start,
-          end: chunk.end,
+          start: chunk.start + baseOffset,
+          end: chunk.end + baseOffset,
           trackId: baseTrackId,
         }))
         .sort((a, b) => a.start - b.start)
@@ -196,14 +197,18 @@ function combineSubtitles(
       if (!indices.length) return null
       const lastIndex = indices[indices.length - 1]
       const chunk = baseTrackId ? subtitles[baseTrackId].chunks[lastIndex] : null
-      return chunk ? chunk.end : null
+      const off = baseTrackId ? (subtitles[baseTrackId].offsetMs || 0) : 0
+      return chunk ? chunk.end + off : null
     })()
 
     const earliestNewChunkStart = newItemIds.length
       ? Math.min(
           ...newItemIds.map((id) => {
             const { chunk } = getChunkSpecs(id)
-            return chunk.start
+            const off = subtitles[baseTrackId || '']
+              ? subtitles[baseTrackId || ''].offsetMs || 0
+              : 0
+            return chunk.start + off
           })
         )
       : null
@@ -238,8 +243,11 @@ function combineSubtitles(
         .filter((tid) => tid && tid !== baseTrackId && Boolean(subtitles[tid!]))
         .forEach((tid) => {
           const track = subtitles[tid!]
+          const off = track.offsetMs || 0
           track.chunks.forEach((chunk, idx) => {
-            if (chunk.start < newCard.end && chunk.end > newCard.start) {
+            const cStart = chunk.start + off
+            const cEnd = chunk.end + off
+            if (cStart < newCard.end && cEnd > newCard.start) {
               newCard.fields[tid!] = newCard.fields[tid!] || []
               newCard.fields[tid!]!.push(idx)
             }
