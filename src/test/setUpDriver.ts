@@ -69,7 +69,7 @@ export function initTestContext(testId: string): IntegrationTestContext {
   }
 
   beforeEach((ctx) => {
-    ;(ctx as any).saveScreenshot = async (filepath: string) => {
+    ; (ctx as any).saveScreenshot = async (filepath: string) => {
       await context.client._driver.client.saveScreenshot(filepath)
     }
   })
@@ -104,6 +104,15 @@ export async function startApp(
       'enable-logging',
       ...(process.env.VITE_INTEGRATION_DEV ? [] : ['disable-extensions']),
       ...(process.env.VITE_INTEGRATION_DEV ? ['verbose'] : []),
+      // CI environment flags for headless Electron
+      ...(process.env.CI ? [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+        '--headless=new',
+      ] : []),
     ],
     env: {
       VITEST: 'true',

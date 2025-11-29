@@ -32,8 +32,10 @@ export const integrationConfig: UserConfig = {
         : null),
       ...(process.env.NODE_ENV ? { NODE_ENV: process.env.NODE_ENV } : null),
     },
-    deps: {
-      inline: ['@mui/material'],
+    server: {
+      deps: {
+        inline: ['@mui/material'],
+      },
     },
   },
 }
