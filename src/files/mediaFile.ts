@@ -17,8 +17,7 @@ const handlers = (): FileEventHandlers<MediaFile> => ({
         r.openFileFailure(
           file,
           filePath,
-          `Problem opening ${getHumanFileName(file)}: ${
-            validationResult.error.message || 'problem reading file.'
+          `Problem opening ${getHumanFileName(file)}: ${validationResult.error.message || 'problem reading file.'
           }`
         ),
       ]
@@ -280,9 +279,9 @@ const loadExternalSubtitles: OpenFileSuccessHandler<MediaFile> = async (
 
         const newlyAutoFoundSubtitlesPaths: {
           [id: string]:
-            | { singleMatch: string }
-            | { multipleMatches: true; singleMatch: undefined }
-            | undefined
+          | { singleMatch: string }
+          | { multipleMatches: true; singleMatch: undefined }
+          | undefined
         } = {}
         const { platform } = window.electronApi
 
@@ -380,19 +379,19 @@ const setDefaultClipSpecs: OpenFileSuccessHandler<MediaFile> = async (
 
   const commonTags = currentFileId
     ? r.getFlashcards(state, currentFileId).reduce((tags, flashcard, i) => {
-        if (i === 0) return flashcard.tags
+      if (i === 0) return flashcard.tags
 
-        const tagsToDelete = []
-        for (const tag of tags) {
-          if (!flashcard.tags.includes(tag)) tagsToDelete.push(tag)
-        }
+      const tagsToDelete = []
+      for (const tag of tags) {
+        if (!flashcard.tags.includes(tag)) tagsToDelete.push(tag)
+      }
 
-        for (const tagToDelete of tagsToDelete) {
-          const index = tags.indexOf(tagToDelete)
-          tags.splice(index, 1)
-        }
-        return tags
-      }, [] as string[])
+      for (const tagToDelete of tagsToDelete) {
+        const index = tags.indexOf(tagToDelete)
+        tags.splice(index, 1)
+      }
+      return tags
+    }, [] as string[])
     : []
   if (commonTags.length) return [r.setDefaultClipSpecs({ tags: commonTags })]
 
@@ -408,14 +407,14 @@ export const updates = {
       subtitles: file.subtitles.some((s) => s.id === track.id) // should not happen... but just in case
         ? file.subtitles
         : [
-            ...file.subtitles,
-            track.type === 'EmbeddedSubtitlesTrack'
-              ? {
-                  type: 'EmbeddedSubtitlesTrack',
-                  id: track.id,
-                }
-              : { type: 'ExternalSubtitlesTrack', id: track.id },
-          ],
+          ...file.subtitles,
+          track.type === 'EmbeddedSubtitlesTrack'
+            ? {
+              type: 'EmbeddedSubtitlesTrack',
+              id: track.id,
+            }
+            : { type: 'ExternalSubtitlesTrack', id: track.id },
+        ],
     }
   },
   deleteSubtitlesTrack: (file: MediaFile, trackId: SubtitlesTrackId) => ({
@@ -457,6 +456,18 @@ export const updates = {
     return {
       ...file,
       flashcardFieldsToSubtitlesTracks,
+    }
+  },
+  setSubtitlesOffset: (
+    file: MediaFile,
+    trackId: SubtitlesTrackId,
+    offsetMs: number
+  ) => {
+    return {
+      ...file,
+      subtitles: file.subtitles.map((s) =>
+        s.id === trackId ? { ...s, offsetMs } : s
+      ),
     }
   },
 } satisfies FileUpdatesForFileType<MediaFile>

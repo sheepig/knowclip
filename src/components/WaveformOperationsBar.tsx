@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { IconButton, Tooltip } from '@mui/material'
-import { ChevronLeft, ChevronRight, Image, BorderColor, Loop, LibraryAdd } from '@mui/icons-material'
+import { ChevronLeft, ChevronRight, Image, Loop, LibraryAdd } from '@mui/icons-material'
 import { actions } from '../actions'
 import { getKeyboardShortcut } from './KeyboardShortcuts'
 import useClozeControls from '../utils/clozeField/useClozeControls'
@@ -95,16 +95,18 @@ const WaveformOperationsBar = ({
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 12px', background: '#000000de', color: '#fff' }}>
+
+
       <Tooltip title={`Previous (${getKeyboardShortcut('Select previous')})`}>
         <IconButton onClick={prev} size="small">
-          <ChevronLeft style={{ color: '#fff'}} />
+          <ChevronLeft style={{ color: '#fff' }} />
         </IconButton>
       </Tooltip>
 
       <div style={{ flex: 1, display: 'flex', justifyContent: 'center', gap: 12 }}>
         <Tooltip title={`${includeStill ? 'Include image' : 'Exclude image'} (no shortcut)`}>
           <IconButton onClick={toggleImage} size="small">
-            <Image style={{ color: includeStill ? '#fff' : '#bbb'}} fontSize="small" />
+            <Image style={{ color: includeStill ? '#fff' : '#bbb' }} fontSize="small" />
           </IconButton>
         </Tooltip>
 
@@ -122,16 +124,16 @@ const WaveformOperationsBar = ({
 
         <Tooltip title={`Create flashcard and start editing (${getKeyboardShortcut('Start editing fields')})`}>
           <IconButton onClick={startCloze} size="small">
-            <LibraryAdd style={{ color: '#fff'}} />
+            <LibraryAdd style={{ color: '#fff' }} />
           </IconButton>
         </Tooltip>
       </div>
 
-      
+
 
       <Tooltip title={`Next (${getKeyboardShortcut('Select next')})`}>
         <IconButton onClick={next} size="small">
-          <ChevronRight style={{ color: '#fff'}} />
+          <ChevronRight style={{ color: '#fff' }} />
         </IconButton>
       </Tooltip>
     </div>

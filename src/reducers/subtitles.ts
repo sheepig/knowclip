@@ -49,6 +49,16 @@ const subtitles: Reducer<SubtitlesState, Action> = (
           const { [trackId]: _, ...newState } = state
           return newState
         }
+        case FileUpdateName.SetSubtitlesOffset: {
+          const [trackId, offsetMs] = update.updatePayload
+          return {
+            ...state,
+            [trackId]: {
+              ...state[trackId],
+              offsetMs,
+            } satisfies SubtitlesTrack,
+          }
+        }
         default:
           return state
       }

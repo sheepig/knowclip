@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react'
 import { useEffect, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { CircularProgress, Tooltip, IconButton } from '@mui/material'
+import { CircularProgress, Tooltip, IconButton, Select, MenuItem } from '@mui/material'
 import { useNavigate, useParams } from 'react-router-dom'
 import cn from 'clsx'
 import Media from '../components/Media'
@@ -39,6 +39,7 @@ import { main$ as $ } from './Main.testLabels'
 import { CLIPWAVE_ID } from '../utils/clipwave'
 
 const Main = () => {
+  const [subtitleVisibility, setSubtitleVisibility] = useState<WaveformSubtitleVisibility>('SHOW_ALL')
   const routeParams = useParams()
   const {
     loop,
@@ -53,6 +54,7 @@ const Main = () => {
     subsBases,
     editing,
     currentFileClipsOrder,
+    fieldsToTracks,
   } = useSelector((state: AppState) => {
     const currentMediaFile = r.getCurrentMediaFile(state)
     return {
@@ -71,6 +73,7 @@ const Main = () => {
       currentFileClipsOrder: r.getCurrentFileClipsOrder(state),
       subsBases: r.getSubtitlesCardBases(state),
       editing: r.isUserEditingCards(state),
+      fieldsToTracks: r.getSubtitlesFlashcardFieldLinks(state),
     }
   })
 
@@ -85,6 +88,35 @@ const Main = () => {
   }, [waveformImages])
 
   const mediaFileId = currentMediaFile?.id
+  const transcriptionTrackId = fieldsToTracks['transcription']
+  const meaningTrackId = fieldsToTracks['meaning']
+
+  const visibleTrackIdsCount = useMemo(() => {
+    const filtered = subsBases.linkedTrackIds.filter((id) => {
+      if (subtitleVisibility === 'SHOW_ALL') return true
+      if (subtitleVisibility === 'HIDE_BOTH') {
+        if (id === meaningTrackId) return false
+      }
+      if (subtitleVisibility === 'HIDE_TRANSCRIPTION' && id === transcriptionTrackId)
+        return false
+      if (subtitleVisibility === 'HIDE_MEANING' && id === meaningTrackId) return false
+      return true
+    })
+
+    if (
+      filtered.length === 0 &&
+      subtitleVisibility === 'HIDE_BOTH' &&
+      subsBases.linkedTrackIds.length > 0
+    ) {
+      return 1
+    }
+    return filtered.length
+  }, [
+    subsBases.linkedTrackIds,
+    subtitleVisibility,
+    transcriptionTrackId,
+    meaningTrackId,
+  ])
 
   const getWaveformItem = useCallback(
     (id: string): WaveformItem | null => {
@@ -106,6 +138,33 @@ const Main = () => {
     document.addEventListener('mousemove', trackCursor)
     return () => document.removeEventListener('mousemove', trackCursor)
   }, [])
+
+  // Keyboard shortcuts for waveform subtitle visibility
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in input/textarea
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return
+      // Only trigger with Shift key
+      if (!e.shiftKey || e.metaKey || e.ctrlKey || e.altKey) return
+
+      const key = e.key
+      const visibilityModes: WaveformSubtitleVisibility[] = [
+        'SHOW_ALL',
+        'HIDE_MEANING',
+        'HIDE_TRANSCRIPTION',
+        'HIDE_BOTH'
+      ]
+
+      const num = parseInt(key)
+      if (!isNaN(num) && num >= 1 && num <= 4) {
+        e.preventDefault()
+        setSubtitleVisibility(visibilityModes[num - 1])
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [setSubtitleVisibility])
+
 
   const playerRef = useRef<HTMLVideoElement | HTMLAudioElement | null>(null)
   const waveform = useWaveform({
@@ -196,12 +255,12 @@ const Main = () => {
     if (selection.selection.item !== previousSelection?.item) {
       const newSelection = selection.item
         ? {
-            type:
-              selection.item.clipwaveType === 'Primary'
-                ? ('Clip' as const)
-                : ('Preview' as const),
-            id: selection.item.id,
-          }
+          type:
+            selection.item.clipwaveType === 'Primary'
+              ? ('Clip' as const)
+              : ('Preview' as const),
+          id: selection.item.id,
+        }
         : null
 
       if (!newSelection && editing) {
@@ -229,7 +288,7 @@ const Main = () => {
     })
 
   const renderPrimaryClip = useWaveformRenderClip()
-  const renderSecondaryClip = useWaveformRenderSubtitlesChunk(waveform)
+  const renderSecondaryClip = useWaveformRenderSubtitlesChunk(waveform, subtitleVisibility)
 
   const idFromParams = routeParams.projectId!
   const currentProjectId = currentProject?.id || null
@@ -295,7 +354,10 @@ const Main = () => {
           />
         )} */}
       </section>
-      <WaveformOperationsBar waveform={waveform} playerRef={playerRef as any} />
+      <WaveformOperationsBar
+        waveform={waveform}
+        playerRef={playerRef as any}
+      />
       {currentMediaFile && !mediaIsEffectivelyLoading ? (
         <div style={{ position: 'relative', width: '100%' }}>
           <Waveform
@@ -310,12 +372,33 @@ const Main = () => {
             renderSecondaryClip={renderSecondaryClip}
             height={
               WAVEFORM_HEIGHT +
-              subsBases.linkedTrackIds.length * SUBTITLES_CHUNK_HEIGHT
+              visibleTrackIdsCount * SUBTITLES_CHUNK_HEIGHT
             }
             style={{ background: 'gray', alignSelf: 'flex-start', width: '100%' }}
           />
+          <div style={{ position: 'absolute', top: 6, left: 6, display: 'flex', gap: 8, alignItems: 'center', zIndex: 10 }}>
+            <Select
+              value={subtitleVisibility}
+              onChange={(e) => setSubtitleVisibility(e.target.value as WaveformSubtitleVisibility)}
+              size="small"
+              variant="outlined"
+              style={{ color: 'white', minWidth: 120, height: 30, background: 'rgba(0,0,0,0.5)' }}
+              sx={{
+                '.MuiSelect-select': { padding: '4px 24px 4px 8px', fontSize: '0.75rem' },
+                '.MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255, 255, 255, 0.3)' },
+                '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: 'white' },
+                '.MuiSvgIcon-root': { color: 'white' }
+              }}
+            >
+              <MenuItem value="SHOW_ALL">Show All</MenuItem>
+              <MenuItem value="HIDE_MEANING">Hide Meaning</MenuItem>
+              <MenuItem value="HIDE_TRANSCRIPTION">Hide Transcription</MenuItem>
+              <MenuItem value="HIDE_BOTH">Hide Both</MenuItem>
+            </Select>
+          </div>
           <div style={{ position: 'absolute', top: 6, right: 6 }}>
-          <Tooltip title="Subtitle sentence segmentation follows the subtitles track linked to “transcription”; if the gap between adjacent sentences is smaller than the project’s “merge adjacent gap” threshold, they are treated as a single sentence." placement="left">
+            <Tooltip title="Subtitle sentence segmentation follows the subtitles track linked to “transcription”; if the gap between adjacent sentences is smaller than the project’s “merge adjacent gap” threshold, they are treated as a single sentence." placement="left">
               <IconButton size="small" aria-label="Subtitles segmentation info">
                 <HelpOutline fontSize="small" style={{ color: '#fff' }} />
               </IconButton>
@@ -334,6 +417,8 @@ const Main = () => {
 }
 
 const EMPTY: string[] = []
+
+import { WaveformSubtitleVisibility } from '../types/WaveformSubtitleVisibility'
 
 export default Main
 

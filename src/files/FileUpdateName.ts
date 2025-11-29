@@ -6,4 +6,5 @@ export enum FileUpdateName {
   DeleteSubtitlesTrack = 'deleteSubtitlesTrack',
   LinkFlashcardFieldToSubtitlesTrack = 'linkFlashcardFieldToSubtitlesTrack',
   SetSubtitlesMergeThresholdMs = 'setSubtitlesMergeThresholdMs',
+  SetSubtitlesOffset = 'setSubtitlesOffset',
 }

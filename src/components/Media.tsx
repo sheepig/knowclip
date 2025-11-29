@@ -135,6 +135,8 @@ const Media = ({
     },
   }
 
+  const dispatch = useDispatch()
+
   useEffect(() => {
     if (props.src) {
       setTimeout(() => {
@@ -147,35 +149,71 @@ const Media = ({
     }
   }, [props.src])
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (['INPUT', 'TEXTAREA'].includes((e.target as HTMLElement).tagName)) return
+      if (e.metaKey || e.ctrlKey || e.altKey) return
+
+      const key = e.key
+      const num = parseInt(key)
+      if (!isNaN(num) && num > 0 && num <= subtitles.all.length) {
+        const track = subtitles.all[num - 1]
+        if (track && track.track) {
+          const isShowing = track.track.mode === 'showing'
+          dispatch(
+            isShowing
+              ? actions.hideSubtitles(track.id)
+              : actions.showSubtitles(track.id)
+          )
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [subtitles.all, dispatch])
+
   useSyncSubtitlesVisibility(subtitles.all, playerRef)
-  const appliedOffsetsRef = useRef(new Map<string, number>())
+  const originalCueTimesRef = useRef(new WeakMap<TextTrackCue, { startTime: number; endTime: number }>())
+
   useEffect(() => {
     const player = playerRef.current
     if (!player) return
     const duration = player.duration || Infinity
     const textTracks = player.textTracks
+
     Array.from(textTracks).forEach((domTrack) => {
       const trackId = domTrack.id
       const s = subtitles.all.find((t) => t.id === trackId)
-      const desiredMs = (s?.track?.offsetMs || 0)
-      const desiredSec = desiredMs / 1000
-      const currentApplied = appliedOffsetsRef.current.get(trackId) || 0
-      const delta = desiredSec - currentApplied
-      if (!delta || !domTrack.cues) return
-      // adjust all cues by delta
+      const offsetMs = s?.track?.offsetMs || 0
+      const offsetSec = offsetMs / 1000
+
+      if (!domTrack.cues) return
+
       const cues = domTrack.cues as any
       for (let i = 0; i < cues.length; i++) {
         const cue = cues[i]
-        const newStart = Math.max(0, Math.min(duration, cue.startTime + delta))
-        const newEnd = Math.max(0, Math.min(duration, cue.endTime + delta))
-        cue.startTime = newStart
-        cue.endTime = newEnd
+
+        // Store original times if not already stored
+        if (!originalCueTimesRef.current.has(cue)) {
+          originalCueTimesRef.current.set(cue, {
+            startTime: cue.startTime,
+            endTime: cue.endTime
+          })
+        }
+
+        const original = originalCueTimesRef.current.get(cue)!
+
+        // Apply offset to original times
+        const newStart = Math.max(0, Math.min(duration, original.startTime + offsetSec))
+        const newEnd = Math.max(0, Math.min(duration, original.endTime + offsetSec))
+
+        // Only update if changed to avoid unnecessary layout thrashing
+        if (Math.abs(cue.startTime - newStart) > 0.001) cue.startTime = newStart
+        if (Math.abs(cue.endTime - newEnd) > 0.001) cue.endTime = newEnd
       }
-      appliedOffsetsRef.current.set(trackId, desiredSec)
     })
   }, [playerRef, subtitles])
 
-  const dispatch = useDispatch()
   const toggleViewMode = useCallback(() => {
     dispatch(
       r.setViewMode(viewMode === 'HORIZONTAL' ? 'VERTICAL' : 'HORIZONTAL')

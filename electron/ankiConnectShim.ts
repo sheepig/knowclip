@@ -55,7 +55,7 @@ export async function startAnkiConnectShim(mainWindow: BrowserWindow) {
     }
     try {
       // console.log('anki-connect shim received:', JSON.stringify(req))
-    } catch {}
+    } catch { }
     const p = req.params || {}
     const readSettings = () => {
       try {
@@ -69,7 +69,7 @@ export async function startAnkiConnectShim(mainWindow: BrowserWindow) {
           settings = persistedRoot?.settings || null
         }
         if (settings && typeof settings === 'string') {
-          try { settings = JSON.parse(settings) } catch {}
+          try { settings = JSON.parse(settings) } catch { }
         }
         const tmpl = settings?.youmitan2AnkiTemplate || null
         const templateName = (tmpl?.templateName || '').trim()
@@ -127,11 +127,11 @@ export async function startAnkiConnectShim(mainWindow: BrowserWindow) {
         }
         try {
           try {
-            console.log('anki addNote payload:', JSON.stringify(note))
+            // console.log('anki addNote payload:', JSON.stringify(note))
             const audioField = String(note?.fields?.audio || '')
             const m = audioField.match(/^\[sound:([^\]]+)\]$/)
             if (m && m[1]) console.log('anki addNote audio filename:', m[1])
-          } catch {}
+          } catch { }
           // forward to renderer to map into current card
           const { templateParams } = readSettings()
           const configuredFields = templateParams ? templateParams.split(',').map((s: string) => s.trim()).filter(Boolean) : []
@@ -148,13 +148,13 @@ export async function startAnkiConnectShim(mainWindow: BrowserWindow) {
         const ids = notes.map((_n: any, i: number) => Date.now() + i)
         try {
           try {
-            console.log('anki addNotes payload count:', notes.length)
-            console.log('anki addNotes first payload:', JSON.stringify(notes[0] || null))
-          } catch {}
+            // console.log('anki addNotes payload count:', notes.length)
+            // console.log('anki addNotes first payload:', JSON.stringify(notes[0] || null))
+          } catch { }
           const { templateParams } = readSettings()
           const configuredFields = templateParams ? templateParams.split(',').map((s: string) => s.trim()).filter(Boolean) : []
           mainWindow.webContents.send('message', 'anki-add-note', JSON.stringify({ notes, configuredFields }))
-        } catch {}
+        } catch { }
         ctx.body = ok(ids)
         break
       }
@@ -207,7 +207,7 @@ export async function startAnkiConnectShim(mainWindow: BrowserWindow) {
             try {
               const sound = `[sound:${safeName}]`
               mainWindow.webContents.send('message', 'anki-store-media', JSON.stringify({ sound }))
-            } catch {}
+            } catch { }
           }
           ctx.body = `"${safeName}"`;
         } catch (e: any) {

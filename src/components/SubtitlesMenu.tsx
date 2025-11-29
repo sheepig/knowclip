@@ -36,7 +36,7 @@ import css from './MainHeader.module.css'
 import usePopover from '../utils/usePopover'
 
 import { subtitlesMenu$ as $ } from './SubtitlesMenu.testLabels'
- 
+
 
 const SubtitlesMenu = () => {
   const { anchorEl, anchorCallbackRef, open, close, isOpen } = usePopover()
@@ -162,10 +162,10 @@ const SubtitlesMenu = () => {
                   id={relation.id}
                   file={
                     file as
-                      | (VttConvertedSubtitlesFile & {
-                          parentType: 'MediaFile'
-                        })
-                      | null
+                    | (VttConvertedSubtitlesFile & {
+                      parentType: 'MediaFile'
+                    })
+                    | null
                   }
                   track={track}
                   title={`Embedded track ${i + 1}`}
@@ -273,18 +273,32 @@ const EmbeddedTrackMenuItem = ({
         />
         <TextField
           label="Offset (ms)"
-          type="number"
-          inputProps={{ step: 50 }}
+          type="text"
+          inputProps={{ inputMode: 'numeric', pattern: '-?[0-9]*' }}
           size="small"
           value={offsetInput}
+          onClick={(e) => e.stopPropagation()}
           onChange={(e) => {
-            const v = Number(e.target.value) || 0
-            setOffsetInput(v)
-            dispatch(actions.setSubtitlesOffset(id, v))
-            if (offsetDebounceRef.current) window.clearTimeout(offsetDebounceRef.current)
-            offsetDebounceRef.current = window.setTimeout(() => {
-              dispatch(actions.saveProjectRequest())
-            }, 3000)
+            const val = e.target.value
+            setOffsetInput(val as any)
+            const v = Number(val)
+            if (!isNaN(v)) {
+              dispatch(actions.setSubtitlesOffset(id, v))
+              if (currentFileId) {
+                dispatch(
+                  actions.updateFile({
+                    fileType: 'MediaFile',
+                    id: currentFileId,
+                    updateName: FileUpdateName.SetSubtitlesOffset,
+                    updatePayload: [id, v],
+                  })
+                )
+              }
+              if (offsetDebounceRef.current) window.clearTimeout(offsetDebounceRef.current)
+              offsetDebounceRef.current = window.setTimeout(() => {
+                dispatch(actions.saveProjectRequest())
+              }, 3000)
+            }
           }}
           style={{ width: 96, marginLeft: 12, marginRight: 56 }}
         />
@@ -370,18 +384,32 @@ const ExternalTrackMenuItem = ({
       />
       <TextField
         label="Offset (ms)"
-        type="number"
-        inputProps={{ step: 50 }}
+        type="text"
+        inputProps={{ inputMode: 'numeric', pattern: '-?[0-9]*' }}
         size="small"
         value={offsetInput}
+        onClick={(e) => e.stopPropagation()}
         onChange={(e) => {
-          const v = Number(e.target.value) || 0
-          setOffsetInput(v)
-          dispatch(actions.setSubtitlesOffset(id, v))
-          if (offsetDebounceRef.current) window.clearTimeout(offsetDebounceRef.current)
-          offsetDebounceRef.current = window.setTimeout(() => {
-            dispatch(actions.saveProjectRequest())
-          }, 3000)
+          const val = e.target.value
+          setOffsetInput(val as any)
+          const v = Number(val)
+          if (!isNaN(v)) {
+            dispatch(actions.setSubtitlesOffset(id, v))
+            if (currentFileId) {
+              dispatch(
+                actions.updateFile({
+                  fileType: 'MediaFile',
+                  id: currentFileId,
+                  updateName: FileUpdateName.SetSubtitlesOffset,
+                  updatePayload: [id, v],
+                })
+              )
+            }
+            if (offsetDebounceRef.current) window.clearTimeout(offsetDebounceRef.current)
+            offsetDebounceRef.current = window.setTimeout(() => {
+              dispatch(actions.saveProjectRequest())
+            }, 3000)
+          }
         }}
         style={{ width: 96, marginLeft: 12, marginRight: 56 }}
       />
@@ -408,7 +436,7 @@ const ExternalTrackMenuItem = ({
           onClick={stopPropagation}
           id={$.trackSubmenu}
         >
-          
+
           <MenuItem
             dense
             onClick={locateFileRequest}
@@ -441,7 +469,7 @@ const ExternalTrackMenuItem = ({
   )
 }
 
- 
+
 
 function useToggleVisible(track: SubtitlesTrack | null, id: string) {
   const dispatch = useDispatch()
